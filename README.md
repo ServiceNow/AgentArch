@@ -18,6 +18,57 @@ AgentArch provides empirical insights into how different design dimensions inter
 - **Multi-Agent ReAct Limitations**: Consistent underperformance across all models in multi-agent ReAct configurations
 - **Reliability Challenges**: Pass^K scores peak at only 6.34%, indicating fundamental gaps for production deployment
 
+## Repository Structure
+
+```
+AgentArch/
+├── configs/
+│   ├── mocked_data/
+│   │   ├── requesting_time_off_mocked_tool_calls.json
+│   │   └── triage_cases_mocked_tool_calls.json
+│   ├── use_case_configs/
+│   │   ├── requesting_time_off.yaml
+│   │   ├── triage_cases.yaml
+│   │   └── prompts.yaml
+├── results/ # sample results folder structure
+│   └── test/ # project name
+│       └── requesting_time_off/ # use case name
+│           └── claude_sonnet_4/ # model name
+│               └── single_agent/ # orchestration mode
+│                   └── no_thinking/ # thinking 
+│                       └── function_calling/ # function calling
+│                           └── transparent/ # memory style
+│                               └── 2025-09-12_13-02-08/ # timestamp
+|                                   ├── metadata.json
+|                                   ├── overall_scores.json
+|                                   ├── perf_stats_overall.json
+|                                   ├── record_level.csv
+├── src/
+│   ├── tools/            # Tool implementations
+│   └── utils/
+│       ├── agent.py      # Agent implementations
+│       ├── metrics.py    # Evaluation metrics
+│       └── run.py        # Main execution script
+├── .env.example          # Environment template
+├── .gitignore
+└── requirements.txt
+```
+
+## Installation
+
+```bash
+git clone https://github.com/ServiceNow/AgentArch.git
+cd AgentArch
+pip install -r requirements.txt
+```
+
+## Quick Start
+
+```python
+python -m src.run --mode single_agent --usecase requesting_time_off --model claude_sonnet_4 --agent_type function_calling --project test --debug
+```
+
+
 ## Enterprise Use Cases
 
 ### 1. Requesting Time Off (TO) - Simple Workflow
@@ -76,56 +127,6 @@ Success requires simultaneous achievement of:
 - Hallucination rates (non-existent tool/agent selection)
 - Tool repetition rates
 - Missing required tools
-
-## Repository Structure
-
-```
-AgentArch/
-├── configs/
-│   ├── mocked_data/
-│   │   ├── requesting_time_off_mocked_tool_calls.json
-│   │   └── triage_cases_mocked_tool_calls.json
-│   ├── use_case_configs/
-│   │   ├── requesting_time_off.yaml
-│   │   ├── triage_cases.yaml
-│   │   └── prompts.yaml
-├── results/ # sample results folder structure
-│   └── test/ # project name
-│       └── requesting_time_off/ # use case name
-│           └── claude_sonnet_4/ # model name
-│               └── single_agent/ # orchestration mode
-│                   └── no_thinking/ # thinking 
-│                       └── function_calling/ # function calling
-│                           └── transparent/ # memory style
-│                               └── 2025-09-12_13-02-08/ # timestamp
-|                                   ├── metadata.json
-|                                   ├── overall_scores.json
-|                                   ├── perf_stats_overall.json
-|                                   ├── record_level.csv
-├── src/
-│   ├── tools/            # Tool implementations
-│   └── utils/
-│       ├── agent.py      # Agent implementations
-│       ├── metrics.py    # Evaluation metrics
-│       └── run.py        # Main execution script
-├── .env.example          # Environment template
-├── .gitignore
-└── requirements.txt
-```
-
-## Installation
-
-```bash
-git clone https://github.com/ServiceNow/AgentArch.git
-cd AgentArch
-pip install -r requirements.txt
-```
-
-## Quick Start
-
-```python
-python -m src.run --mode single_agent --usecase requesting_time_off --model claude_sonnet_4 --agent_type function_calling --project test --debug
-```
 
 ## Key Recommendations
 
