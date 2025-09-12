@@ -96,9 +96,9 @@ python -m src.run --mode single_agent --usecase requesting_time_off --model clau
 
 ### Orchestration Strategies
 1. **Orchestrator-led, Isolated Agents**: Centralized task assignment with mediated communication
-   <img width="784" height="626" alt="indirect" src="https://github.com/user-attachments/assets/64310502-3a7c-4bf6-b28c-d7330db36e70" />
+   <img width="400" alt="indirect" src="https://github.com/user-attachments/assets/64310502-3a7c-4bf6-b28c-d7330db36e70" />
 3. **Orchestrator-led, Open Network**: Initial task assignment with direct agent-to-agent communication
-   <img width="804" height="626" alt="direct" src="https://github.com/user-attachments/assets/e1a2a174-4761-4925-b43f-b3a1de76a929" />
+   <img width="400" alt="direct" src="https://github.com/user-attachments/assets/e1a2a174-4761-4925-b43f-b3a1de76a929" />
 5. **Single Agent**: Unified agent with access to all tools
 
 
