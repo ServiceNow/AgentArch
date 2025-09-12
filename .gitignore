@@ -1,0 +1,9 @@
+agentic_env/
+__pycache__/
+.env
+results/
+.DS_Store
+.idea
+google_credentials.json
+test_setup/
+NewAgentic.iml

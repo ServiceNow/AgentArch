@@ -1,0 +1,1253 @@
+{
+  "1": {
+    "fetch_leave_balance": 4,
+    "validate_leave_type": true,
+    "check_pending_leaves": [],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Pending check",
+      "comment": ""
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "Employee1234"
+  },
+  "2": {
+    "fetch_leave_balance": 33,
+    "validate_leave_type": true,
+    "check_pending_leaves": [],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Pending check",
+      "comment": ""
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "Employee1235"
+  },
+  "3": {
+    "fetch_leave_balance": 33,
+    "validate_leave_type": true,
+    "check_pending_leaves": [],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Pending check",
+      "comment": ""
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "Employee1236"
+  },
+  "4": {
+    "fetch_leave_balance": 33,
+    "validate_leave_type": true,
+    "check_pending_leaves": [],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Pending check",
+      "comment": ""
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "AXJGHWRGW124T58"
+  },
+  "5": {
+    "fetch_leave_balance": 15,
+    "validate_leave_type": true,
+    "check_pending_leaves": [],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Pending check",
+      "comment": ""
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "WEUFWIUB12341351"
+  },
+  "6": {
+    "fetch_leave_balance": 31,
+    "validate_leave_type": true,
+    "check_pending_leaves": [],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Pending check",
+      "comment": ""
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "sdoefwejpfoweg1241251"
+  },
+  "7": {
+    "fetch_leave_balance": 105,
+    "validate_leave_type": true,
+    "check_pending_leaves": [],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Pending check",
+      "comment": ""
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "KFDBDPKFNPE124253"
+  },
+  "8": {
+    "fetch_leave_balance": 128,
+    "validate_leave_type": true,
+    "check_pending_leaves": [],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Pending check",
+      "comment": ""
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "BEYRU13"
+  },
+  "9": {
+    "fetch_leave_balance": 101,
+    "validate_leave_type": true,
+    "check_pending_leaves": [],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Pending check",
+      "comment": ""
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "WIDNO3826595J"
+  },
+  "10": {
+    "fetch_leave_balance": 30,
+    "validate_leave_type": true,
+    "check_pending_leaves": [],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Pending check",
+      "comment": ""
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "FGWOEGWEHTOWEITW13567023"
+  },
+  "11": {
+    "fetch_leave_balance": 80,
+    "validate_leave_type": true,
+    "check_pending_leaves": [],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Approved",
+      "comment": "Enjoy your time off!"
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "SIGWENROIW24852"
+  },
+  "12": {
+    "fetch_leave_balance": 15,
+    "validate_leave_type": true,
+    "check_pending_leaves": [],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Approved",
+      "comment": "Hope you feel better soon!"
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "MRCHN78439XD"
+  },
+  "13": {
+    "fetch_leave_balance": 30,
+    "validate_leave_type": true,
+    "check_pending_leaves": [],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Approved",
+      "comment": "Unpaid leave request approved."
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "SRDR92847KL"
+  },
+  "14": {
+    "fetch_leave_balance": 25,
+    "validate_leave_type": true,
+    "check_pending_leaves": [],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Approved",
+      "comment": "Have a great vacation!"
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "DVKM51923YP"
+  },
+  "15": {
+    "fetch_leave_balance": 20,
+    "validate_leave_type": true,
+    "check_pending_leaves": [],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Approved",
+      "comment": "Take care of yourself!"
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "EMTH36584QR"
+  },
+  "16": {
+    "fetch_leave_balance": 18,
+    "validate_leave_type": true,
+    "check_pending_leaves": [],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Approved",
+      "comment": "Enjoy your time off!"
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "JMWL47329MS"
+  },
+  "17": {
+    "fetch_leave_balance": 45,
+    "validate_leave_type": true,
+    "check_pending_leaves": [],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Approved",
+      "comment": "Unpaid leave request approved."
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "LSGR83456TN"
+  },
+  "18": {
+    "fetch_leave_balance": 12,
+    "validate_leave_type": true,
+    "check_pending_leaves": [],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Approved",
+      "comment": "Hope you feel better soon!"
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "MCBR65192PQ"
+  },
+  "19": {
+    "fetch_leave_balance": 35,
+    "validate_leave_type": true,
+    "check_pending_leaves": [],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Approved",
+      "comment": "Have a great vacation!"
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "JNLE29374WX"
+  },
+  "20": {
+    "fetch_leave_balance": 22,
+    "validate_leave_type": true,
+    "check_pending_leaves": [],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Approved",
+      "comment": "Unpaid leave request approved."
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "RBDV74185ZK"
+  },
+  "21": {
+    "fetch_leave_balance": 16,
+    "validate_leave_type": true,
+    "check_pending_leaves": [],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Approved",
+      "comment": "Take care of yourself!"
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "AMCL58392VF"
+  },
+  "22": {
+    "fetch_leave_balance": 28,
+    "validate_leave_type": true,
+    "check_pending_leaves": [],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Approved",
+      "comment": "Enjoy your time off!"
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "KVMZ41735RH"
+  },
+  "23": {
+    "fetch_leave_balance": 35,
+    "validate_leave_type": true,
+    "check_pending_leaves": [],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Approved",
+      "comment": "Unpaid leave request approved."
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "STWH92647LM"
+  },
+  "24": {
+    "fetch_leave_balance": 10,
+    "validate_leave_type": true,
+    "check_pending_leaves": [],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Approved",
+      "comment": "Hope you feel better soon!"
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "AXJN16428GB"
+  },
+  "25": {
+    "fetch_leave_balance": 32,
+    "validate_leave_type": true,
+    "check_pending_leaves": [],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Approved",
+      "comment": "Have a great vacation!"
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "NCTL73951DJ"
+  },
+  "26": {
+    "fetch_leave_balance": 19,
+    "validate_leave_type": true,
+    "check_pending_leaves": [{
+      "leave_type": "vacation",
+      "start_date": "2025-07-22",
+      "end_date": "2025-07-26",
+      "status": "pending"
+    }]
+  ,
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Pending check",
+      "comment": ""
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "POJBDFNDOW3758"
+  },
+  "27": {
+    "fetch_leave_balance": 11,
+    "validate_leave_type": true,
+    "check_pending_leaves": [{
+      "leave_type": "sick",
+      "start_date": "2025-01-15",
+      "end_date": "2025-01-18",
+      "status": "pending"
+    }],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Pending check",
+      "comment": ""
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "CRRV84729PL"
+  },
+  "28": {
+    "fetch_leave_balance": 21,
+    "validate_leave_type": true,
+    "check_pending_leaves": [{
+      "leave_type": "vacation",
+      "start_date": "2025-03-10",
+      "end_date": "2025-03-16",
+      "status": "pending"
+    }],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Pending check",
+      "comment": ""
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "MCAD56381QR"
+  },
+  "29": {
+    "fetch_leave_balance": 17,
+    "validate_leave_type": true,
+    "check_pending_leaves": [{
+      "leave_type": "unpaid",
+      "start_date": "2025-02-05",
+      "end_date": "2025-02-14",
+      "status": "pending"
+    }],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Pending check",
+      "comment": ""
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "BRPK29574WS"
+  },
+  "30": {
+    "fetch_leave_balance": 7,
+    "validate_leave_type": true,
+    "check_pending_leaves": [{
+      "leave_type": "sick",
+      "start_date": "2025-03-20",
+      "end_date": "2025-03-22",
+      "status": "pending"
+    }],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Pending check",
+      "comment": ""
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "RCGR73825XY"
+  },
+  "31": {
+    "fetch_leave_balance": 20,
+    "validate_leave_type": true,
+    "check_pending_leaves": [{
+      "leave_type": "vacation",
+      "start_date": "2025-04-14",
+      "end_date": "2025-04-17",
+      "status": "pending"
+    }, {
+      "leave_type": "vacation",
+      "start_date": "2025-05-26",
+      "end_date": "2025-05-27",
+      "status": "pending"
+    }],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Pending check",
+      "comment": ""
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "ANTM41592ZK"
+  },
+  "32": {
+    "fetch_leave_balance": 8,
+    "validate_leave_type": true,
+    "check_pending_leaves": [{
+      "leave_type": "unpaid",
+      "start_date": "2025-07-07",
+      "end_date": "2025-07-09",
+      "status": "pending"
+    }],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Pending check",
+      "comment": ""
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "DNCP68374MN"
+  },
+  "33": {
+    "fetch_leave_balance": 14,
+    "validate_leave_type": true,
+    "check_pending_leaves": [{
+      "leave_type": "sick",
+      "start_date": "2025-08-11",
+      "end_date": "2025-08-16",
+      "status": "pending"
+    }],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Pending check",
+      "comment": ""
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "STWD95127JK"
+  },
+  "34": {
+    "fetch_leave_balance": 25,
+    "validate_leave_type": true,
+    "check_pending_leaves": [{
+      "leave_type": "vacation",
+      "start_date": "2025-09-08",
+      "end_date": "2025-09-15",
+      "status": "pending"
+    }, {
+      "leave_type": "vacation",
+      "start_date": "2025-11-24",
+      "end_date": "2025-11-26",
+      "status": "pending"
+    }],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Pending check",
+      "comment": ""
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "PTHK52638VL"
+  },
+  "35": {
+    "fetch_leave_balance": 13,
+    "validate_leave_type": true,
+    "check_pending_leaves": [{
+      "leave_type": "unpaid",
+      "start_date": "2025-10-20",
+      "end_date": "2025-10-23",
+      "status": "pending"
+    }],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Pending check",
+      "comment": ""
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "GREV27419FT"
+  },
+  "36": {
+    "fetch_leave_balance": 12,
+    "validate_leave_type": true,
+    "check_pending_leaves": [{
+      "leave_type": "sick",
+      "start_date": "2025-11-17",
+      "end_date": "2025-11-21",
+      "status": "pending"
+    }],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Pending check",
+      "comment": ""
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "MLTR83956HG"
+  },
+  "37": {
+    "fetch_leave_balance": 18,
+    "validate_leave_type": true,
+    "check_pending_leaves": [{
+      "leave_type": "vacation",
+      "start_date": "2025-03-03",
+      "end_date": "2025-03-06",
+      "status": "pending"
+    }],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Pending check",
+      "comment": ""
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "CHBL64782RD"
+  },
+  "38": {
+    "fetch_leave_balance": 10,
+    "validate_leave_type": true,
+    "check_pending_leaves": [{
+      "leave_type": "unpaid",
+      "start_date": "2025-02-17",
+      "end_date": "2025-02-19",
+      "status": "pending"
+    }],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Pending check",
+      "comment": ""
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "KMSC39174BP"
+  },
+  "39": {
+    "fetch_leave_balance": 9,
+    "validate_leave_type": true,
+    "check_pending_leaves": [{
+      "leave_type": "sick",
+      "start_date": "2025-04-21",
+      "end_date": "2025-04-23",
+      "status": "pending"
+    }],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Pending check",
+      "comment": ""
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "DNWR71528QT"
+  },
+  "40": {
+    "fetch_leave_balance": 19,
+    "validate_leave_type": true,
+    "check_pending_leaves": [{
+      "leave_type": "vacation",
+      "start_date": "2025-04-28",
+      "end_date": "2025-05-02",
+      "status": "pending"
+    }, {
+      "leave_type": "vacation",
+      "start_date": "2025-07-14",
+      "end_date": "2025-07-15",
+      "status": "pending"
+    }],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Pending check",
+      "comment": ""
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "ANGK45863ML"
+  },
+  "41": {
+    "fetch_leave_balance": 72,
+    "validate_leave_type": true,
+    "check_pending_leaves": [
+      {
+        "leave_type": "vacation",
+        "start_date": "2024-01-15",
+        "end_date": "2024-01-20",
+        "status": "pending"
+      },
+      {
+        "leave_type": "sick",
+        "start_date": "2024-04-10",
+        "end_date": "2024-04-12",
+        "status": "pending"
+      },
+      {
+        "leave_type": "vacation",
+        "start_date": "2024-05-25",
+        "end_date": "2024-05-28",
+        "status": "pending"
+      }
+    ],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Pending check",
+      "comment": ""
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "MARC78291XY"
+  },
+  "42": {
+    "fetch_leave_balance": 67,
+    "validate_leave_type": true,
+    "check_pending_leaves": [
+      {
+        "leave_type": "unpaid",
+        "start_date": "2024-06-05",
+        "end_date": "2024-06-15",
+        "status": "pending"
+      },
+      {
+        "leave_type": "unpaid",
+        "start_date": "2024-07-20",
+        "end_date": "2024-07-22",
+        "status": "pending"
+      },
+      {
+        "leave_type": "sick",
+        "start_date": "2024-08-30",
+        "end_date": "2024-09-02",
+        "status": "pending"
+      }
+    ],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Pending check",
+      "comment": ""
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "JENC92847ZK"
+  },
+  "43": {
+    "fetch_leave_balance": 72,
+    "validate_leave_type": true,
+    "check_pending_leaves": [
+      {
+        "leave_type": "vacation",
+        "start_date": "2024-04-20",
+        "end_date": "2024-04-25",
+        "status": "pending"
+      },
+      {
+        "leave_type": "sick",
+        "start_date": "2024-05-15",
+        "end_date": "2024-05-17",
+        "status": "pending"
+      },
+      {
+        "leave_type": "vacation",
+        "start_date": "2024-06-10",
+        "end_date": "2024-06-14",
+        "status": "pending"
+      }
+    ],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Pending check",
+      "comment": ""
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "DAVT53619MN"
+  },
+  "44": {
+    "fetch_leave_balance": 28,
+    "validate_leave_type": true,
+    "check_pending_leaves": [
+      {
+        "leave_type": "sick",
+        "start_date": "2024-04-08",
+        "end_date": "2024-04-10",
+        "status": "pending"
+      },
+      {
+        "leave_type": "vacation",
+        "start_date": "2024-05-20",
+        "end_date": "2024-05-25",
+        "status": "pending"
+      },
+      {
+        "leave_type": "sick",
+        "start_date": "2024-07-15",
+        "end_date": "2024-07-18",
+        "status": "pending"
+      }
+    ],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Pending check",
+      "comment": ""
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "SARJ41582PQ"
+  },
+  "45": {
+    "fetch_leave_balance": 57,
+    "validate_leave_type": true,
+    "check_pending_leaves": [
+      {
+        "leave_type": "vacation",
+        "start_date": "2024-04-12",
+        "end_date": "2024-04-18",
+        "status": "pending"
+      },
+      {
+        "leave_type": "sick",
+        "start_date": "2024-05-28",
+        "end_date": "2024-05-30",
+        "status": "pending"
+      },
+      {
+        "leave_type": "vacation",
+        "start_date": "2024-06-25",
+        "end_date": "2024-06-28",
+        "status": "pending"
+      }
+    ],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Pending check",
+      "comment": ""
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "ROBW67394RS"
+  },
+  "46": {
+    "fetch_leave_balance": 67,
+    "validate_leave_type": true,
+    "check_pending_leaves": [
+      {
+        "leave_type": "vacation",
+        "start_date": "2024-05-15",
+        "end_date": "2024-05-20",
+        "status": "pending"
+      },
+      {
+        "leave_type": "sick",
+        "start_date": "2024-06-10",
+        "end_date": "2024-06-12",
+        "status": "pending"
+      },
+      {
+        "leave_type": "vacation",
+        "start_date": "2024-07-25",
+        "end_date": "2024-07-30",
+        "status": "pending"
+      }
+    ],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Pending check",
+      "comment": ""
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "LISG29746TU"
+  },
+  "47": {
+    "fetch_leave_balance": 67,
+    "validate_leave_type": true,
+    "check_pending_leaves": [
+      {
+        "leave_type": "unpaid",
+        "start_date": "2024-04-15",
+        "end_date": "2024-04-20",
+        "status": "pending"
+      },
+      {
+        "leave_type": "vacation",
+        "start_date": "2024-05-10",
+        "end_date": "2024-05-15",
+        "status": "pending"
+      },
+      {
+        "leave_type": "unpaid",
+        "start_date": "2024-06-20",
+        "end_date": "2024-06-25",
+        "status": "pending"
+      }
+    ],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Pending check",
+      "comment": ""
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "MICB85173VW"
+  },
+  "48": {
+    "fetch_leave_balance": 54,
+    "validate_leave_type": true,
+    "check_pending_leaves": [
+      {
+        "leave_type": "sick",
+        "start_date": "2024-04-25",
+        "end_date": "2024-04-28",
+        "status": "pending"
+      },
+      {
+        "leave_type": "vacation",
+        "start_date": "2024-05-12",
+        "end_date": "2024-05-18",
+        "status": "pending"
+      },
+      {
+        "leave_type": "unpaid",
+        "start_date": "2024-06-05",
+        "end_date": "2024-06-08",
+        "status": "pending"
+      }
+    ],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Pending check",
+      "comment": ""
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "AMAD36528XY"
+  },
+  "49": {
+    "fetch_leave_balance": 73,
+    "validate_leave_type": true,
+    "check_pending_leaves": [
+      {
+        "leave_type": "vacation",
+        "start_date": "2024-05-08",
+        "end_date": "2024-05-15",
+        "status": "pending"
+      },
+      {
+        "leave_type": "vacation",
+        "start_date": "2024-06-20",
+        "end_date": "2024-06-22",
+        "status": "pending"
+      },
+      {
+        "leave_type": "vacation",
+        "start_date": "2024-07-10",
+        "end_date": "2024-07-16",
+        "status": "pending"
+      }
+    ],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Pending check",
+      "comment": ""
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "KEVM74951ZA"
+  },
+  "50": {
+    "fetch_leave_balance": 61,
+    "validate_leave_type": true,
+    "check_pending_leaves": [
+      {
+        "leave_type": "vacation",
+        "start_date": "2024-04-18",
+        "end_date": "2024-04-25",
+        "status": "pending"
+      },
+      {
+        "leave_type": "vacation",
+        "start_date": "2024-05-22",
+        "end_date": "2024-05-24",
+        "status": "pending"
+      },
+      {
+        "leave_type": "vacation",
+        "start_date": "2024-06-15",
+        "end_date": "2024-06-20",
+        "status": "pending"
+      }
+    ],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Pending check",
+      "comment": ""
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "RACT59237BC"
+  },
+  "51": {
+    "fetch_leave_balance": 58,
+    "validate_leave_type": true,
+    "check_pending_leaves": [
+      {
+        "leave_type": "vacation",
+        "start_date": "2024-05-15",
+        "end_date": "2024-05-22",
+        "status": "pending"
+      },
+      {
+        "leave_type": "vacation",
+        "start_date": "2024-06-10",
+        "end_date": "2024-06-13",
+        "status": "pending"
+      },
+      {
+        "leave_type": "vacation",
+        "start_date": "2024-07-20",
+        "end_date": "2024-07-25",
+        "status": "pending"
+      }
+    ],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Pending check",
+      "comment": ""
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "JAMA82649DE"
+  },
+  "52": {
+    "fetch_leave_balance": 65,
+    "validate_leave_type": true,
+    "check_pending_leaves": [
+      {
+        "leave_type": "unpaid",
+        "start_date": "2024-04-20",
+        "end_date": "2024-04-28",
+        "status": "pending"
+      },
+      {
+        "leave_type": "vacation",
+        "start_date": "2024-05-18",
+        "end_date": "2024-05-22",
+        "status": "pending"
+      },
+      {
+        "leave_type": "unpaid",
+        "start_date": "2024-06-25",
+        "end_date": "2024-06-30",
+        "status": "pending"
+      }
+    ],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Pending check",
+      "comment": ""
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "STEW46385FG"
+  },
+  "53": {
+    "fetch_leave_balance": 62,
+    "validate_leave_type": true,
+    "check_pending_leaves": [
+      {
+        "leave_type": "sick",
+        "start_date": "2024-04-10",
+        "end_date": "2024-04-15",
+        "status": "pending"
+      },
+      {
+        "leave_type": "vacation",
+        "start_date": "2024-05-25",
+        "end_date": "2024-05-30",
+        "status": "pending"
+      },
+      {
+        "leave_type": "sick",
+        "start_date": "2024-06-18",
+        "end_date": "2024-06-22",
+        "status": "pending"
+      }
+    ],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Pending check",
+      "comment": ""
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "DANL73162HI"
+  },
+  "54": {
+    "fetch_leave_balance": 68,
+    "validate_leave_type": true,
+    "check_pending_leaves": [
+      {
+        "leave_type": "vacation",
+        "start_date": "2024-05-12",
+        "end_date": "2024-05-18",
+        "status": "pending"
+      },
+      {
+        "leave_type": "sick",
+        "start_date": "2024-06-22",
+        "end_date": "2024-06-25",
+        "status": "pending"
+      },
+      {
+        "leave_type": "vacation",
+        "start_date": "2024-07-30",
+        "end_date": "2024-08-05",
+        "status": "pending"
+      }
+    ],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Pending check",
+      "comment": ""
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "MICL91574JK"
+  },
+  "55": {
+    "fetch_leave_balance": 39,
+    "validate_leave_type": true,
+    "check_pending_leaves": [
+      {
+        "leave_type": "vacation",
+        "start_date": "2024-04-08",
+        "end_date": "2024-04-15",
+        "status": "pending"
+      },
+      {
+        "leave_type": "sick",
+        "start_date": "2024-05-20",
+        "end_date": "2024-05-24",
+        "status": "pending"
+      },
+      {
+        "leave_type": "vacation",
+        "start_date": "2024-06-10",
+        "end_date": "2024-06-14",
+        "status": "pending"
+      }
+    ],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Pending check",
+      "comment": ""
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "CHRM58739LM"
+  },
+  "56": {
+    "fetch_leave_balance": 100,
+    "validate_leave_type": false,
+    "check_pending_leaves": [
+      {
+        "leave_type": "sick",
+        "start_date": "2024-04-08",
+        "end_date": "2024-04-12",
+        "status": "pending"
+      },
+      {
+        "leave_type": "vacation",
+        "start_date": "2024-05-20",
+        "end_date": "2024-05-25",
+        "status": "pending"
+      },
+      {
+        "leave_type": "sick",
+        "start_date": "2024-06-10",
+        "end_date": "2024-06-14",
+        "status": "pending"
+      }
+    ],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Pending check",
+      "comment": ""
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "PATJ64829NO"
+  },
+  "57": {
+    "fetch_leave_balance": 120,
+    "validate_leave_type": false,
+    "check_pending_leaves": [
+      {
+        "leave_type": "vacation",
+        "start_date": "2024-04-15",
+        "end_date": "2024-04-20",
+        "status": "pending"
+      },
+      {
+        "leave_type": "sick",
+        "start_date": "2024-05-10",
+        "end_date": "2024-05-15",
+        "status": "pending"
+      },
+      {
+        "leave_type": "vacation",
+        "start_date": "2024-06-25",
+        "end_date": "2024-06-30",
+        "status": "pending"
+      }
+    ],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Pending check",
+      "comment": ""
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "THOW92583PQ"
+  },
+  "58": {
+    "fetch_leave_balance": 150,
+    "validate_leave_type": false,
+    "check_pending_leaves": [
+      {
+        "leave_type": "unpaid",
+        "start_date": "2024-04-22",
+        "end_date": "2024-04-28",
+        "status": "pending"
+      },
+      {
+        "leave_type": "vacation",
+        "start_date": "2024-05-18",
+        "end_date": "2024-05-22",
+        "status": "pending"
+      },
+      {
+        "leave_type": "unpaid",
+        "start_date": "2024-06-12",
+        "end_date": "2024-06-18",
+        "status": "pending"
+      }
+    ],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Pending check",
+      "comment": ""
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "KARM37194RS"
+  },
+  "59": {
+    "fetch_leave_balance": 200,
+    "validate_leave_type": false,
+    "check_pending_leaves": [
+      {
+        "leave_type": "sick",
+        "start_date": "2024-04-30",
+        "end_date": "2024-05-05",
+        "status": "pending"
+      },
+      {
+        "leave_type": "vacation",
+        "start_date": "2024-05-28",
+        "end_date": "2024-06-02",
+        "status": "pending"
+      },
+      {
+        "leave_type": "sick",
+        "start_date": "2024-06-20",
+        "end_date": "2024-06-25",
+        "status": "pending"
+      }
+    ],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Pending check",
+      "comment": ""
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "GRES75648TU"
+  },
+  "60": {
+    "fetch_leave_balance": 180,
+    "validate_leave_type": false,
+    "check_pending_leaves": [
+      {
+        "leave_type": "vacation",
+        "start_date": "2024-04-12",
+        "end_date": "2024-04-18",
+        "status": "pending"
+      },
+      {
+        "leave_type": "sick",
+        "start_date": "2024-05-15",
+        "end_date": "2024-05-20",
+        "status": "pending"
+      },
+      {
+        "leave_type": "vacation",
+        "start_date": "2024-06-08",
+        "end_date": "2024-06-12",
+        "status": "pending"
+      }
+    ],
+    "detect_leave_conflicts": [],
+    "route_for_approval": {
+      "decision": "Pending check",
+      "comment": ""
+    },
+    "update_leave_record": "Leave record updated successfully",
+    "notify_employee": true,
+    "get_employee_id": "NAND48275VW"
+  }
+}

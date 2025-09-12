@@ -1,0 +1,2034 @@
+use_case_name: Requesting Time Off/Leave (HR)
+filename: requesting_time_off
+use_case_description: This workflow enables employees to request time off (leave)
+  and have their request processed efficiently. The process involves checking the
+  employee's leave balance, validating the leave type, checking for pending requests,
+  routing the request for approval, checking for conflicts, updating records, and
+  notifying all relevant parties.
+use_case_instructions: |
+  Help the user with their leave request. Only proceed to requesting the leave if the employee is eligible for leave.
+  Before ending execution, you MUST respond with one of the following options: "Request rejected" if the request was rejected or "Request approved" if the request was approved.
+possible_final_outcomes:
+  - Request rejected
+  - Request approved
+single_agent_max_iterations: 16
+regular_max_iterations: 10
+orchestrator_max_iterations: 6
+agents:
+  user_information_retriever_agent:
+    agent_profile: |
+      Retrieves user information such as employee ID.
+    agent_instructions: |
+    access:
+    tools:
+      - tool_name: get_employee_id
+        tool_description: Retrieves employee id from system.
+        input_parameters:
+          employee_name:
+            description: Employee name
+            type: string
+        response_type: int
+        response_description: Employee id value
+        tool_type: query
+  balance_checking_agent:
+    agent_profile: |
+      Verifies employee leave balance and eligibility for time off requests.
+    agent_instructions: |
+      The employee is eligible for leave if they have sufficient leave balance (greater or equal to the number of days requested), if the leave type is valid, and if there are no pending leave requests that may affect their balance. Check these criteria in that order.
+      For an employee to have sufficient leave balance, they must have a leave balance greater than or equal to the number of days requested. The number of days requested includes the current request plus any pending leave requests.
+    access:
+      - user_information_retriever_agent
+    tools:
+    - tool_name: fetch_leave_balance
+      tool_description: Retrieves the current leave balance for a specified employee
+        and leave type from the HR system.
+      input_parameters:
+        employee_id:
+          description: The unique identifier of the employee.
+          type: string
+        leave_type:
+          description: The type of leave to check. Must be one of the following leave types - 'vacation', 'sick', 'unpaid'
+          type: string
+      response_description: Returns the number of available leave days for the specified
+        leave type as an integer.
+      response_type: int
+      tool_type: query
+    - tool_name: validate_leave_type
+      tool_description: Checks if the requested leave type is valid and available
+        for the employee.
+      input_parameters:
+        employee_id:
+          description: The unique identifier of the employee.
+          type: string
+        leave_type:
+          description: The type of leave to check. Must be one of the following leave types - 'vacation', 'sick', 'unpaid'
+          type: string
+      response_description: Returns a boolean indicating if the leave type is valid
+        for the employee.
+      response_type: bool
+      tool_type: query
+    - tool_name: check_pending_leaves
+      tool_description: Identifies any pending or upcoming leave requests for the
+        employee that may affect their available balance.
+      input_parameters:
+        employee_id:
+          description: The unique identifier of the employee.
+          type: string
+      response_description: Returns a list of pending leave requests, each with leave
+        type, start date, end date, and status.
+      response_type: 'list[dict] (e.g., [{ ''leave_type'': str, ''start_date'': str,
+        ''end_date'': str, ''status'': str }])'
+      tool_type: query
+  leave_approval_agent:
+    agent_profile: |
+      Manages the approval process for leave requests, including conflict detection and notifications.
+    agent_instructions: |
+      In your finish message, you must state whether the employee leave request was approved or rejected using this exact format: "Request rejected" if the request was rejected or "Request approved" if the request was approved.
+    access:
+      - user_information_retriever_agent
+      - balance_checking_agent
+    tools:
+    - tool_name: detect_leave_conflicts
+      tool_description: Checks for scheduling conflicts or overlapping leaves within
+        the employee's team for the requested leave period. Only use this tool once you have checked that the employee is eligible to request the leave.
+      input_parameters:
+        employee_id:
+          description: The unique identifier of the employee.
+          type: string
+        start_date:
+          description: The start date of the requested leave in the following format (YYYY-MM-DD).
+          type: string
+        end_date:
+          description: The end date of the requested leave in the following format (YYYY-MM-DD).
+          type: string
+      response_description: Returns a list of conflicts, each with the conflicting
+        employee's name, leave dates, and role. Returns an empty list if no conflicts
+        are found.
+      response_type: 'list[dict] (e.g., [{ ''employee_name'': str, ''start_date'':
+        str, ''end_date'': str, ''role'': str }])'
+      tool_type: query
+
+    - tool_name: route_for_approval
+      tool_description: Routes the leave request to the appropriate manager or HR
+        personnel for approval and returns the approval decision. Only use this tool once you have checked that the employee is eligible to request the leave.
+      input_parameters:
+        employee_id:
+          description: The unique identifier of the employee.
+          type: string
+        leave_type:
+          description: The type of leave requested.
+          type: string
+        start_date:
+          description: The start date of the requested leave in the following format (YYYY-MM-DD).
+          type: string
+        end_date:
+          description: The end date of the requested leave in the following format (YYYY-MM-DD).
+          type: string
+      response_description: Returns the approval decision as a string ('approved'
+        or 'rejected') and an optional comment.
+      response_type: 'dict (e.g., { ''decision'': str, ''comment'': str })'
+      tool_type: modify
+    - tool_name: update_leave_record
+      tool_description: Updates the HR system with the outcome of the leave request
+        (approved or rejected). Only use this tool once you have checked that the employee is eligible to request the leave.
+      input_parameters:
+        employee_id:
+          description: The unique identifier of the employee.
+          type: string
+        leave_type:
+          description: The type of leave requested.
+          type: string
+        start_date:
+          description: The start date of the leave in the following format (YYYY-MM-DD).
+          type: string
+        end_date:
+          description: The end date of the leave in the following format (YYYY-MM-DD).
+          type: string
+        status:
+          description: The final status of the leave request ('approved' or 'rejected').
+          type: string
+      response_description: Returns a confirmation message indicating the record was
+        updated successfully.
+      response_type: string
+      tool_type: modify
+
+    - tool_name: notify_employee
+      tool_description: Sends a notification to the employee regarding the status
+        of their leave request. Only use this tool once you have checked that the employee is eligible to request the leave and all other steps have been completed.
+      input_parameters:
+        employee_id:
+          description: The unique identifier of the employee.
+          type: string
+      response_description: Returns a boolean indicating whether the notification
+        was sent successfully.
+      response_type: bool
+      tool_type: modify
+
+utterances_and_ground_truths:
+  - id: "1"
+    user_utterance: Hi HR my name is Sarah Smith, I’d like to go on holiday from July 14th 2025 to July 18th 2025.
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+      final_response: "Request rejected"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+      min_custom_tool_number: 4
+      tool_args:
+        get_employee_id:
+          employee_name: sarah smith
+        fetch_leave_balance:
+          employee_id: Employee1234
+          leave_type: vacation
+        validate_leave_type:
+          employee_id: Employee1234
+          leave_type: vacation
+        check_pending_leaves:
+          employee_id: Employee1234
+  - id: "2"
+    user_utterance: Hi HR my name is Abigayle Brown i would like to request a vacation from jan 29th 2024 to march 3 2024.
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+      final_response: "Request rejected"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+      min_custom_tool_number: 4
+      tool_args:
+        get_employee_id:
+          employee_name: abigayle brown
+        fetch_leave_balance:
+          employee_id: Employee1235
+          leave_type: vacation
+        validate_leave_type:
+          employee_id: Employee1235
+          leave_type: vacation
+        check_pending_leaves:
+          employee_id: Employee1235
+  - id: "3"
+    user_utterance: Hi HR my name is Jay Harris i would like to request a vacation from jan 29th 2025 to march 3 2025.
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+      final_response: "Request rejected"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+      min_custom_tool_number: 4
+      tool_args:
+        get_employee_id:
+          employee_name: jay harris
+        fetch_leave_balance:
+          employee_id: Employee1236
+          leave_type: vacation
+        validate_leave_type:
+          employee_id: Employee1236
+          leave_type: vacation
+        check_pending_leaves:
+          employee_id: Employee1236
+  - id: "4"
+    user_utterance: My name is jaxson Wallace and i wanna go on a fun trip from 1/29/25 to 3/3/25.
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+      final_response: "Request rejected"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+      min_custom_tool_number: 4
+      tool_args:
+        get_employee_id:
+          employee_name: jaxson wallace
+        fetch_leave_balance:
+          employee_id: AXJGHWRGW124T58
+          leave_type: vacation
+        validate_leave_type:
+          employee_id: AXJGHWRGW124T58
+          leave_type: vacation
+        check_pending_leaves:
+          employee_id: AXJGHWRGW124T58
+  - id: "5"
+    user_utterance: Hi HR my name is hayle axeL, I’d like to go on a fun vacation with my family from August 14th 2025 to September 1st 2025.
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+      final_response: "Request rejected"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+      min_custom_tool_number: 4
+      tool_args:
+        get_employee_id:
+          employee_name: hayle axel
+        fetch_leave_balance:
+          employee_id: WEUFWIUB12341351
+          leave_type: vacation
+        validate_leave_type:
+          employee_id: WEUFWIUB12341351
+          leave_type: vacation
+        check_pending_leaves:
+          employee_id: WEUFWIUB12341351
+  - id: "6"
+    user_utterance: Hi HR my name is evelyn hugo, I am trying to go on a personal road trip from January 30th 2024 through March 1st 2024.
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+      final_response: "Request rejected"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+      min_custom_tool_number: 4
+      tool_args:
+        get_employee_id:
+          employee_name: evelyn hugo
+        fetch_leave_balance:
+          employee_id: sdoefwejpfoweg1241251
+          leave_type: vacation
+        validate_leave_type:
+          employee_id: sdoefwejpfoweg1241251
+          leave_type: vacation
+        check_pending_leaves:
+          employee_id: sdoefwejpfoweg1241251
+  - id: "7"
+    user_utterance: I am bob smith, unfortunately i have been diagnosed with a serious illness and I will need to take off work for some time. I will need to be off from January 15th 2024 through the end of April 2024.
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+      final_response: "Request rejected"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+      min_custom_tool_number: 4
+      tool_args:
+        get_employee_id:
+          employee_name: bob smith
+        fetch_leave_balance:
+          employee_id: KFDBDPKFNPE124253
+          leave_type: sick
+        validate_leave_type:
+          employee_id: KFDBDPKFNPE124253
+          leave_type: sick
+        check_pending_leaves:
+          employee_id: KFDBDPKFNPE124253
+  - id: "8"
+    user_utterance: I am alexandra alex, i have been diagnosed with a serious illness and I will need to take off work for some time. I will need to be off all of January through April 2025.
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+      final_response: "Request rejected"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+      min_custom_tool_number: 4
+      tool_args:
+        get_employee_id:
+          employee_name: alexandra alex
+        fetch_leave_balance:
+          employee_id: BEYRU13
+          leave_type: sick
+        validate_leave_type:
+          employee_id: BEYRU13
+          leave_type: sick
+        check_pending_leaves:
+          employee_id: BEYRU13
+  - id: "9"
+    user_utterance: I am ally lee, I will need to take off work for some time due to illness. The dates I want to take off are 14-1-24 through 14-4-24.
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+      final_response: "Request rejected"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+      min_custom_tool_number: 4
+      tool_args:
+        get_employee_id:
+          employee_name: ally lee
+        fetch_leave_balance:
+          employee_id: WIDNO3826595J
+          leave_type: sick
+        validate_leave_type:
+          employee_id: WIDNO3826595J
+          leave_type: sick
+        check_pending_leaves:
+          employee_id: WIDNO3826595J
+  - id: "10"
+    user_utterance: My name is Nicky McMann, I will need to take unpaid time off. The dates I want to take off are 28-2-24 through 29-3-24.
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+      final_response: "Request rejected"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+      min_custom_tool_number: 4
+      tool_args:
+        get_employee_id:
+          employee_name: nicky mcmann
+        fetch_leave_balance:
+          employee_id: FGWOEGWEHTOWEITW13567023
+          leave_type: unpaid
+        validate_leave_type:
+          employee_id: FGWOEGWEHTOWEITW13567023
+          leave_type: unpaid
+        check_pending_leaves:
+          employee_id: FGWOEGWEHTOWEITW13567023
+  - id: "11"
+    user_utterance: hey there! im ava jacobs, id like to request to take a fun vacation from june 2nd 2025 to august 5th 2025.
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+            - leave_approval_agent
+      final_response: "Request approved"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+          - detect_leave_conflicts
+          - route_for_approval
+          - update_leave_record
+          - notify_employee
+      min_custom_tool_number: 8
+      tool_args:
+        get_employee_id:
+          employee_name: ava jacobs
+        fetch_leave_balance:
+          employee_id: SIGWENROIW24852
+          leave_type: vacation
+        validate_leave_type:
+          employee_id: SIGWENROIW24852
+          leave_type: vacation
+        check_pending_leaves:
+          employee_id: SIGWENROIW24852
+        detect_leave_conflicts:
+          employee_id: SIGWENROIW24852
+          start_date: 2025-06-02
+          end_date: 2025-08-05
+        route_for_approval:
+          employee_id: SIGWENROIW24852
+          start_date: 2025-06-02
+          end_date: 2025-08-05
+          leave_type: vacation
+        update_leave_record:
+          employee_id: SIGWENROIW24852
+          start_date: 2025-06-02
+          end_date: 2025-08-05
+          leave_type: vacation
+          status: approved
+        notify_employee:
+          employee_id: SIGWENROIW24852
+  - id: "12"
+    user_utterance: hello! i'm marcus chen, and i'd like to request sick leave from march 15th 2025 to march 22nd 2025.
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+            - leave_approval_agent
+      final_response: "Request approved"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+          - detect_leave_conflicts
+          - route_for_approval
+          - update_leave_record
+          - notify_employee
+      min_custom_tool_number: 8
+      tool_args:
+        get_employee_id:
+          employee_name: marcus chen
+        fetch_leave_balance:
+          employee_id: MRCHN78439XD
+          leave_type: sick
+        validate_leave_type:
+          employee_id: MRCHN78439XD
+          leave_type: sick
+        check_pending_leaves:
+          employee_id: MRCHN78439XD
+        detect_leave_conflicts:
+          employee_id: MRCHN78439XD
+          start_date: 2025-03-15
+          end_date: 2025-03-22
+        route_for_approval:
+          employee_id: MRCHN78439XD
+          start_date: 2025-03-15
+          end_date: 2025-03-22
+          leave_type: sick
+        update_leave_record:
+          employee_id: MRCHN78439XD
+          start_date: 2025-03-15
+          end_date: 2025-03-22
+          leave_type: sick
+          status: approved
+        notify_employee:
+          employee_id: MRCHN78439XD
+  - id: "13"
+    user_utterance: hi, this is sarah rodriguez. i need to request unpaid leave from april 10th 2025 to april 18th 2025.
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+            - leave_approval_agent
+      final_response: "Request approved"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+          - detect_leave_conflicts
+          - route_for_approval
+          - update_leave_record
+          - notify_employee
+      min_custom_tool_number: 8
+      tool_args:
+        get_employee_id:
+          employee_name: sarah rodriguez
+        fetch_leave_balance:
+          employee_id: SRDR92847KL
+          leave_type: unpaid
+        validate_leave_type:
+          employee_id: SRDR92847KL
+          leave_type: unpaid
+        check_pending_leaves:
+          employee_id: SRDR92847KL
+        detect_leave_conflicts:
+          employee_id: SRDR92847KL
+          start_date: 2025-04-10
+          end_date: 2025-04-18
+        route_for_approval:
+          employee_id: SRDR92847KL
+          start_date: 2025-04-10
+          end_date: 2025-04-18
+          leave_type: unpaid
+        update_leave_record:
+          employee_id: SRDR92847KL
+          start_date: 2025-04-10
+          end_date: 2025-04-18
+          leave_type: unpaid
+          status: approved
+        notify_employee:
+          employee_id: SRDR92847KL
+  - id: "14"
+    user_utterance: good morning! i'm david kim, requesting vacation leave from july 1st 2025 to july 15th 2025.
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+            - leave_approval_agent
+      final_response: "Request approved"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+          - detect_leave_conflicts
+          - route_for_approval
+          - update_leave_record
+          - notify_employee
+      min_custom_tool_number: 8
+      tool_args:
+        get_employee_id:
+          employee_name: david kim
+        fetch_leave_balance:
+          employee_id: DVKM51923YP
+          leave_type: vacation
+        validate_leave_type:
+          employee_id: DVKM51923YP
+          leave_type: vacation
+        check_pending_leaves:
+          employee_id: DVKM51923YP
+        detect_leave_conflicts:
+          employee_id: DVKM51923YP
+          start_date: 2025-07-01
+          end_date: 2025-07-15
+        route_for_approval:
+          employee_id: DVKM51923YP
+          start_date: 2025-07-01
+          end_date: 2025-07-15
+          leave_type: vacation
+        update_leave_record:
+          employee_id: DVKM51923YP
+          start_date: 2025-07-01
+          end_date: 2025-07-15
+          leave_type: vacation
+          status: approved
+        notify_employee:
+          employee_id: DVKM51923YP
+  - id: "15"
+    user_utterance: hey, i'm emma thompson. i need sick leave from february 8th 2025 to february 14th 2025.
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+            - leave_approval_agent
+      final_response: "Request approved"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+          - detect_leave_conflicts
+          - route_for_approval
+          - update_leave_record
+          - notify_employee
+      min_custom_tool_number: 8
+      tool_args:
+        get_employee_id:
+          employee_name: emma thompson
+        fetch_leave_balance:
+          employee_id: EMTH36584QR
+          leave_type: sick
+        validate_leave_type:
+          employee_id: EMTH36584QR
+          leave_type: sick
+        check_pending_leaves:
+          employee_id: EMTH36584QR
+        detect_leave_conflicts:
+          employee_id: EMTH36584QR
+          start_date: 2025-02-08
+          end_date: 2025-02-14
+        route_for_approval:
+          employee_id: EMTH36584QR
+          start_date: 2025-02-08
+          end_date: 2025-02-14
+          leave_type: sick
+        update_leave_record:
+          employee_id: EMTH36584QR
+          start_date: 2025-02-08
+          end_date: 2025-02-14
+          leave_type: sick
+          status: approved
+        notify_employee:
+          employee_id: EMTH36584QR
+  - id: "16"
+    user_utterance: hello there! i'm james wilson, and i'd like to request vacation from september 3rd 2025 to september 10th 2025.
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+            - leave_approval_agent
+      final_response: "Request approved"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+          - detect_leave_conflicts
+          - route_for_approval
+          - update_leave_record
+          - notify_employee
+      min_custom_tool_number: 8
+      tool_args:
+        get_employee_id:
+          employee_name: james wilson
+        fetch_leave_balance:
+          employee_id: JMWL47329MS
+          leave_type: vacation
+        validate_leave_type:
+          employee_id: JMWL47329MS
+          leave_type: vacation
+        check_pending_leaves:
+          employee_id: JMWL47329MS
+        detect_leave_conflicts:
+          employee_id: JMWL47329MS
+          start_date: 2025-09-03
+          end_date: 2025-09-10
+        route_for_approval:
+          employee_id: JMWL47329MS
+          start_date: 2025-09-03
+          end_date: 2025-09-10
+          leave_type: vacation
+        update_leave_record:
+          employee_id: JMWL47329MS
+          start_date: 2025-09-03
+          end_date: 2025-09-10
+          leave_type: vacation
+          status: approved
+        notify_employee:
+          employee_id: JMWL47329MS
+  - id: "17"
+    user_utterance: hi, this is lisa garcia. i need unpaid leave from may 20th 2025 to june 3rd 2025.
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+            - leave_approval_agent
+      final_response: "Request approved"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+          - detect_leave_conflicts
+          - route_for_approval
+          - update_leave_record
+          - notify_employee
+      min_custom_tool_number: 8
+      tool_args:
+        get_employee_id:
+          employee_name: lisa garcia
+        fetch_leave_balance:
+          employee_id: LSGR83456TN
+          leave_type: unpaid
+        validate_leave_type:
+          employee_id: LSGR83456TN
+          leave_type: unpaid
+        check_pending_leaves:
+          employee_id: LSGR83456TN
+        detect_leave_conflicts:
+          employee_id: LSGR83456TN
+          start_date: 2025-05-20
+          end_date: 2025-06-03
+        route_for_approval:
+          employee_id: LSGR83456TN
+          start_date: 2025-05-20
+          end_date: 2025-06-03
+          leave_type: unpaid
+        update_leave_record:
+          employee_id: LSGR83456TN
+          start_date: 2025-05-20
+          end_date: 2025-06-03
+          leave_type: unpaid
+          status: approved
+        notify_employee:
+          employee_id: LSGR83456TN
+  - id: "18"
+    user_utterance: good afternoon! i'm michael brown, requesting sick leave from january 25th 2025 to february 1st 2025.
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+            - leave_approval_agent
+      final_response: "Request approved"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+          - detect_leave_conflicts
+          - route_for_approval
+          - update_leave_record
+          - notify_employee
+      min_custom_tool_number: 8
+      tool_args:
+        get_employee_id:
+          employee_name: michael brown
+        fetch_leave_balance:
+          employee_id: MCBR65192PQ
+          leave_type: sick
+        validate_leave_type:
+          employee_id: MCBR65192PQ
+          leave_type: sick
+        check_pending_leaves:
+          employee_id: MCBR65192PQ
+        detect_leave_conflicts:
+          employee_id: MCBR65192PQ
+          start_date: 2025-01-25
+          end_date: 2025-02-01
+        route_for_approval:
+          employee_id: MCBR65192PQ
+          start_date: 2025-01-25
+          end_date: 2025-02-01
+          leave_type: sick
+        update_leave_record:
+          employee_id: MCBR65192PQ
+          start_date: 2025-01-25
+          end_date: 2025-02-01
+          leave_type: sick
+          status: approved
+        notify_employee:
+          employee_id: MCBR65192PQ
+  - id: "19"
+    user_utterance: hello! i'm jennifer lee, and i'd like to request vacation leave from august 12th 2025 to august 26th 2025.
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+            - leave_approval_agent
+      final_response: "Request approved"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+          - detect_leave_conflicts
+          - route_for_approval
+          - update_leave_record
+          - notify_employee
+      min_custom_tool_number: 8
+      tool_args:
+        get_employee_id:
+          employee_name: jennifer lee
+        fetch_leave_balance:
+          employee_id: JNLE29374WX
+          leave_type: vacation
+        validate_leave_type:
+          employee_id: JNLE29374WX
+          leave_type: vacation
+        check_pending_leaves:
+          employee_id: JNLE29374WX
+        detect_leave_conflicts:
+          employee_id: JNLE29374WX
+          start_date: 2025-08-12
+          end_date: 2025-08-26
+        route_for_approval:
+          employee_id: JNLE29374WX
+          start_date: 2025-08-12
+          end_date: 2025-08-26
+          leave_type: vacation
+        update_leave_record:
+          employee_id: JNLE29374WX
+          start_date: 2025-08-12
+          end_date: 2025-08-26
+          leave_type: vacation
+          status: approved
+        notify_employee:
+          employee_id: JNLE29374WX
+  - id: "20"
+    user_utterance: hi there! i'm robert davis, requesting unpaid leave from october 5th 2025 to october 12th 2025.
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+            - leave_approval_agent
+      final_response: "Request approved"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+          - detect_leave_conflicts
+          - route_for_approval
+          - update_leave_record
+          - notify_employee
+      min_custom_tool_number: 8
+      tool_args:
+        get_employee_id:
+          employee_name: robert davis
+        fetch_leave_balance:
+          employee_id: RBDV74185ZK
+          leave_type: unpaid
+        validate_leave_type:
+          employee_id: RBDV74185ZK
+          leave_type: unpaid
+        check_pending_leaves:
+          employee_id: RBDV74185ZK
+        detect_leave_conflicts:
+          employee_id: RBDV74185ZK
+          start_date: 2025-10-05
+          end_date: 2025-10-12
+        route_for_approval:
+          employee_id: RBDV74185ZK
+          start_date: 2025-10-05
+          end_date: 2025-10-12
+          leave_type: unpaid
+        update_leave_record:
+          employee_id: RBDV74185ZK
+          start_date: 2025-10-05
+          end_date: 2025-10-12
+          leave_type: unpaid
+          status: approved
+        notify_employee:
+          employee_id: RBDV74185ZK
+  - id: "21"
+    user_utterance: hey! i'm amanda clark, and i need to request sick leave from march 5th 2025 to march 12th 2025.
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+            - leave_approval_agent
+      final_response: "Request approved"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+          - detect_leave_conflicts
+          - route_for_approval
+          - update_leave_record
+          - notify_employee
+      min_custom_tool_number: 8
+      tool_args:
+        get_employee_id:
+          employee_name: amanda clark
+        fetch_leave_balance:
+          employee_id: AMCL58392VF
+          leave_type: sick
+        validate_leave_type:
+          employee_id: AMCL58392VF
+          leave_type: sick
+        check_pending_leaves:
+          employee_id: AMCL58392VF
+        detect_leave_conflicts:
+          employee_id: AMCL58392VF
+          start_date: 2025-03-05
+          end_date: 2025-03-12
+        route_for_approval:
+          employee_id: AMCL58392VF
+          start_date: 2025-03-05
+          end_date: 2025-03-12
+          leave_type: sick
+        update_leave_record:
+          employee_id: AMCL58392VF
+          start_date: 2025-03-05
+          end_date: 2025-03-12
+          leave_type: sick
+          status: approved
+        notify_employee:
+          employee_id: AMCL58392VF
+  - id: "22"
+    user_utterance: good morning! i'm kevin martinez, requesting vacation from june 18th 2025 to july 2nd 2025.
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+            - leave_approval_agent
+      final_response: "Request approved"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+          - detect_leave_conflicts
+          - route_for_approval
+          - update_leave_record
+          - notify_employee
+      min_custom_tool_number: 8
+      tool_args:
+        get_employee_id:
+          employee_name: kevin martinez
+        fetch_leave_balance:
+          employee_id: KVMZ41735RH
+          leave_type: vacation
+        validate_leave_type:
+          employee_id: KVMZ41735RH
+          leave_type: vacation
+        check_pending_leaves:
+          employee_id: KVMZ41735RH
+        detect_leave_conflicts:
+          employee_id: KVMZ41735RH
+          start_date: 2025-06-18
+          end_date: 2025-07-02
+        route_for_approval:
+          employee_id: KVMZ41735RH
+          start_date: 2025-06-18
+          end_date: 2025-07-02
+          leave_type: vacation
+        update_leave_record:
+          employee_id: KVMZ41735RH
+          start_date: 2025-06-18
+          end_date: 2025-07-02
+          leave_type: vacation
+          status: approved
+        notify_employee:
+          employee_id: KVMZ41735RH
+  - id: "23"
+    user_utterance: hello there! i'm stephanie white, and i'd like to request unpaid leave from april 28th 2025 to may 9th 2025.
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+            - leave_approval_agent
+      final_response: "Request approved"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+          - detect_leave_conflicts
+          - route_for_approval
+          - update_leave_record
+          - notify_employee
+      min_custom_tool_number: 8
+      tool_args:
+        get_employee_id:
+          employee_name: stephanie white
+        fetch_leave_balance:
+          employee_id: STWH92647LM
+          leave_type: unpaid
+        validate_leave_type:
+          employee_id: STWH92647LM
+          leave_type: unpaid
+        check_pending_leaves:
+          employee_id: STWH92647LM
+        detect_leave_conflicts:
+          employee_id: STWH92647LM
+          start_date: 2025-04-28
+          end_date: 2025-05-09
+        route_for_approval:
+          employee_id: STWH92647LM
+          start_date: 2025-04-28
+          end_date: 2025-05-09
+          leave_type: unpaid
+        update_leave_record:
+          employee_id: STWH92647LM
+          start_date: 2025-04-28
+          end_date: 2025-05-09
+          leave_type: unpaid
+          status: approved
+        notify_employee:
+          employee_id: STWH92647LM
+  - id: "24"
+    user_utterance: hi! i'm alex johnson, requesting sick leave from august 4th 2025 to august 8th 2025.
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+            - leave_approval_agent
+      final_response: "Request approved"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+          - detect_leave_conflicts
+          - route_for_approval
+          - update_leave_record
+          - notify_employee
+      min_custom_tool_number: 8
+      tool_args:
+        get_employee_id:
+          employee_name: alex johnson
+        fetch_leave_balance:
+          employee_id: AXJN16428GB
+          leave_type: sick
+        validate_leave_type:
+          employee_id: AXJN16428GB
+          leave_type: sick
+        check_pending_leaves:
+          employee_id: AXJN16428GB
+        detect_leave_conflicts:
+          employee_id: AXJN16428GB
+          start_date: 2025-08-04
+          end_date: 2025-08-08
+        route_for_approval:
+          employee_id: AXJN16428GB
+          start_date: 2025-08-04
+          end_date: 2025-08-08
+          leave_type: sick
+        update_leave_record:
+          employee_id: AXJN16428GB
+          start_date: 2025-08-04
+          end_date: 2025-08-08
+          leave_type: sick
+          status: approved
+        notify_employee:
+          employee_id: AXJN16428GB
+  - id: "25"
+    user_utterance: good afternoon! i'm nicole taylor, and i'd like to request vacation leave from september 22nd 2025 to october 6th 2025.
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+            - leave_approval_agent
+      final_response: "Request approved"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+          - detect_leave_conflicts
+          - route_for_approval
+          - update_leave_record
+          - notify_employee
+      min_custom_tool_number: 8
+      tool_args:
+        get_employee_id:
+          employee_name: nicole taylor
+        fetch_leave_balance:
+          employee_id: NCTL73951DJ
+          leave_type: vacation
+        validate_leave_type:
+          employee_id: NCTL73951DJ
+          leave_type: vacation
+        check_pending_leaves:
+          employee_id: NCTL73951DJ
+        detect_leave_conflicts:
+          employee_id: NCTL73951DJ
+          start_date: 2025-09-22
+          end_date: 2025-10-06
+        route_for_approval:
+          employee_id: NCTL73951DJ
+          start_date: 2025-09-22
+          end_date: 2025-10-06
+          leave_type: vacation
+        update_leave_record:
+          employee_id: NCTL73951DJ
+          start_date: 2025-09-22
+          end_date: 2025-10-06
+          leave_type: vacation
+          status: approved
+        notify_employee:
+          employee_id: NCTL73951DJ
+  - id: "26"
+    user_utterance: My name is hadley boyce, I wanna take vacation from September 8th 2025 through September 22nd.
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+      final_response: "Request rejected"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+      min_custom_tool_number: 4
+      tool_args:
+        get_employee_id:
+          employee_name: hadley boyce
+        fetch_leave_balance:
+          employee_id: POJBDFNDOW3758
+          leave_type: vacation
+        validate_leave_type:
+          employee_id: POJBDFNDOW3758
+          leave_type: vacation
+        check_pending_leaves:
+          employee_id: POJBDFNDOW3758
+  - id: "27"
+    user_utterance: hello! i'm carlos rivera, requesting sick leave from february 10th 2025 to february 17th 2025.
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+      final_response: "Request rejected"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+      min_custom_tool_number: 4
+      tool_args:
+        get_employee_id:
+          employee_name: carlos rivera
+        fetch_leave_balance:
+          employee_id: CRRV84729PL
+          leave_type: sick
+        validate_leave_type:
+          employee_id: CRRV84729PL
+          leave_type: sick
+        check_pending_leaves:
+          employee_id: CRRV84729PL
+  - id: "28"
+    user_utterance: hi there! i'm michelle adams, and i'd like to request vacation from may 5th 2025 to may 19th 2025.
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+      final_response: "Request rejected"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+      min_custom_tool_number: 4
+      tool_args:
+        get_employee_id:
+          employee_name: michelle adams
+        fetch_leave_balance:
+          employee_id: MCAD56381QR
+          leave_type: vacation
+        validate_leave_type:
+          employee_id: MCAD56381QR
+          leave_type: vacation
+        check_pending_leaves:
+          employee_id: MCAD56381QR
+  - id: "29"
+    user_utterance: good morning! i'm brian parker, requesting unpaid leave from march 12th 2025 to march 19th 2025.
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+      final_response: "Request rejected"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+      min_custom_tool_number: 4
+      tool_args:
+        get_employee_id:
+          employee_name: brian parker
+        fetch_leave_balance:
+          employee_id: BRPK29574WS
+          leave_type: unpaid
+        validate_leave_type:
+          employee_id: BRPK29574WS
+          leave_type: unpaid
+        check_pending_leaves:
+          employee_id: BRPK29574WS
+  - id: "30"
+    user_utterance: hey! i'm rachel green, and i need sick leave from april 7th 2025 to april 11th 2025.
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+      final_response: "Request rejected"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+      min_custom_tool_number: 4
+      tool_args:
+        get_employee_id:
+          employee_name: rachel green
+        fetch_leave_balance:
+          employee_id: RCGR73825XY
+          leave_type: sick
+        validate_leave_type:
+          employee_id: RCGR73825XY
+          leave_type: sick
+        check_pending_leaves:
+          employee_id: RCGR73825XY
+  - id: "31"
+    user_utterance: hello there! i'm anthony mitchell, requesting vacation from june 23rd 2025 to july 7th 2025.
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+      final_response: "Request rejected"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+      min_custom_tool_number: 4
+      tool_args:
+        get_employee_id:
+          employee_name: anthony mitchell
+        fetch_leave_balance:
+          employee_id: ANTM41592ZK
+          leave_type: vacation
+        validate_leave_type:
+          employee_id: ANTM41592ZK
+          leave_type: vacation
+        check_pending_leaves:
+          employee_id: ANTM41592ZK
+  - id: "32"
+    user_utterance: hi! i'm diana cooper, and i'd like to request unpaid leave from august 15th 2025 to august 20th 2025.
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+      final_response: "Request rejected"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+      min_custom_tool_number: 4
+      tool_args:
+        get_employee_id:
+          employee_name: diana cooper
+        fetch_leave_balance:
+          employee_id: DNCP68374MN
+          leave_type: unpaid
+        validate_leave_type:
+          employee_id: DNCP68374MN
+          leave_type: unpaid
+        check_pending_leaves:
+          employee_id: DNCP68374MN
+  - id: "33"
+    user_utterance: good afternoon! i'm steven ward, requesting sick leave from september 1st 2025 to september 9th 2025.
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+      final_response: "Request rejected"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+      min_custom_tool_number: 4
+      tool_args:
+        get_employee_id:
+          employee_name: steven ward
+        fetch_leave_balance:
+          employee_id: STWD95127JK
+          leave_type: sick
+        validate_leave_type:
+          employee_id: STWD95127JK
+          leave_type: sick
+        check_pending_leaves:
+          employee_id: STWD95127JK
+  - id: "34"
+    user_utterance: hey there! i'm patricia hall, and i need vacation leave from october 13th 2025 to october 27th 2025.
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+      final_response: "Request rejected"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+      min_custom_tool_number: 4
+      tool_args:
+        get_employee_id:
+          employee_name: patricia hall
+        fetch_leave_balance:
+          employee_id: PTHK52638VL
+          leave_type: vacation
+        validate_leave_type:
+          employee_id: PTHK52638VL
+          leave_type: vacation
+        check_pending_leaves:
+          employee_id: PTHK52638VL
+  - id: "35"
+    user_utterance: hello! i'm gregory evans, requesting unpaid leave from november 3rd 2025 to november 12th 2025.
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+      final_response: "Request rejected"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+      min_custom_tool_number: 4
+      tool_args:
+        get_employee_id:
+          employee_name: gregory evans
+        fetch_leave_balance:
+          employee_id: GREV27419FT
+          leave_type: unpaid
+        validate_leave_type:
+          employee_id: GREV27419FT
+          leave_type: unpaid
+        check_pending_leaves:
+          employee_id: GREV27419FT
+  - id: "36"
+    user_utterance: hi! i'm melissa torres, and i'd like to request sick leave from december 8th 2025 to december 15th 2025.
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+      final_response: "Request rejected"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+      min_custom_tool_number: 4
+      tool_args:
+        get_employee_id:
+          employee_name: melissa torres
+        fetch_leave_balance:
+          employee_id: MLTR83956HG
+          leave_type: sick
+        validate_leave_type:
+          employee_id: MLTR83956HG
+          leave_type: sick
+        check_pending_leaves:
+          employee_id: MLTR83956HG
+  - id: "37"
+    user_utterance: good morning! i'm christopher bell, requesting vacation from january 20th 2025 to february 3rd 2025.
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+      final_response: "Request rejected"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+      min_custom_tool_number: 4
+      tool_args:
+        get_employee_id:
+          employee_name: christopher bell
+        fetch_leave_balance:
+          employee_id: CHBL64782RD
+          leave_type: vacation
+        validate_leave_type:
+          employee_id: CHBL64782RD
+          leave_type: vacation
+        check_pending_leaves:
+          employee_id: CHBL64782RD
+  - id: "38"
+    user_utterance: hey! i'm kimberly scott, and i need unpaid leave from march 25th 2025 to april 1st 2025.
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+      final_response: "Request rejected"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+      min_custom_tool_number: 4
+      tool_args:
+        get_employee_id:
+          employee_name: kimberly scott
+        fetch_leave_balance:
+          employee_id: KMSC39174BP
+          leave_type: unpaid
+        validate_leave_type:
+          employee_id: KMSC39174BP
+          leave_type: unpaid
+        check_pending_leaves:
+          employee_id: KMSC39174BP
+  - id: "39"
+    user_utterance: hello there! i'm daniel wright, requesting sick leave from may 12th 2025 to may 18th 2025.
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+      final_response: "Request rejected"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+      min_custom_tool_number: 4
+      tool_args:
+        get_employee_id:
+          employee_name: daniel wright
+        fetch_leave_balance:
+          employee_id: DNWR71528QT
+          leave_type: sick
+        validate_leave_type:
+          employee_id: DNWR71528QT
+          leave_type: sick
+        check_pending_leaves:
+          employee_id: DNWR71528QT
+  - id: "40"
+    user_utterance: hi! i'm angela king, and i'd like to request vacation leave from june 9th 2025 to june 23rd 2025.
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+      final_response: "Request rejected"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+      min_custom_tool_number: 4
+      tool_args:
+        get_employee_id:
+          employee_name: angela king
+        fetch_leave_balance:
+          employee_id: ANGK45863ML
+          leave_type: vacation
+        validate_leave_type:
+          employee_id: ANGK45863ML
+          leave_type: vacation
+        check_pending_leaves:
+          employee_id: ANGK45863ML
+
+  - id: "41"
+    user_utterance: hello, i'm marcus rodriguez and i want to take the entire month of february and march off this year in 2024
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+      final_response: "Request rejected"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+      min_custom_tool_number: 4
+      tool_args:
+        get_employee_id:
+          employee_name: marcus rodriguez
+        fetch_leave_balance:
+          employee_id: MARC78291XY
+          leave_type: vacation
+        validate_leave_type:
+          employee_id: MARC78291XY
+          leave_type: vacation
+        check_pending_leaves:
+          employee_id: MARC78291XY
+
+  - id: "42"
+    user_utterance: hi there! jennifer chen here, id like to take off from feb 14 2024 to april 4th for unpaid leave
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+      final_response: "Request rejected"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+      min_custom_tool_number: 4
+      tool_args:
+        get_employee_id:
+          employee_name: jennifer chen
+        fetch_leave_balance:
+          employee_id: JENC92847ZK
+          leave_type: unpaid
+        validate_leave_type:
+          employee_id: JENC92847ZK
+          leave_type: unpaid
+        check_pending_leaves:
+          employee_id: JENC92847ZK
+
+  - id: "43"
+    user_utterance: good morning, david thompson speaking. i want to take off from the second day of february through the end of march 2024
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+      final_response: "Request rejected"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+      min_custom_tool_number: 4
+      tool_args:
+        get_employee_id:
+          employee_name: david thompson
+        fetch_leave_balance:
+          employee_id: DAVT53619MN
+          leave_type: vacation
+        validate_leave_type:
+          employee_id: DAVT53619MN
+          leave_type: vacation
+        check_pending_leaves:
+          employee_id: DAVT53619MN
+
+  - id: "44"
+    user_utterance: hey, sarah johnson here. i want to request sick leave from 28-2-24 through 14-3-24
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+      final_response: "Request rejected"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+      min_custom_tool_number: 4
+      tool_args:
+        get_employee_id:
+          employee_name: sarah johnson
+        fetch_leave_balance:
+          employee_id: SARJ41582PQ
+          leave_type: sick
+        validate_leave_type:
+          employee_id: SARJ41582PQ
+          leave_type: sick
+        check_pending_leaves:
+          employee_id: SARJ41582PQ
+
+  - id: "45"
+    user_utterance: hi, this is robert wilson. i need to take vacation leave starting february 1st 2024 until march 15th 2024
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+      final_response: "Request rejected"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+      min_custom_tool_number: 4
+      tool_args:
+        get_employee_id:
+          employee_name: robert wilson
+        fetch_leave_balance:
+          employee_id: ROBW67394RS
+          leave_type: vacation
+        validate_leave_type:
+          employee_id: ROBW67394RS
+          leave_type: vacation
+        check_pending_leaves:
+          employee_id: ROBW67394RS
+
+  - id: "46"
+    user_utterance: hello, lisa garcia speaking. i'd like to request time off from february 10th through april 2nd 2024
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+      final_response: "Request rejected"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+      min_custom_tool_number: 4
+      tool_args:
+        get_employee_id:
+          employee_name: lisa garcia
+        fetch_leave_balance:
+          employee_id: LISG29746TU
+          leave_type: vacation
+        validate_leave_type:
+          employee_id: LISG29746TU
+          leave_type: vacation
+        check_pending_leaves:
+          employee_id: LISG29746TU
+
+  - id: "47"
+    user_utterance: hi there, michael brown here. i want to take unpaid leave from feb 5th 2024 to march 25th 2024
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+      final_response: "Request rejected"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+      min_custom_tool_number: 4
+      tool_args:
+        get_employee_id:
+          employee_name: michael brown
+        fetch_leave_balance:
+          employee_id: MICB85173VW
+          leave_type: unpaid
+        validate_leave_type:
+          employee_id: MICB85173VW
+          leave_type: unpaid
+        check_pending_leaves:
+          employee_id: MICB85173VW
+
+  - id: "48"
+    user_utterance: good afternoon, amanda davis here. i need to request sick leave from february 20th 2024 through march 30th 2024
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+      final_response: "Request rejected"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+      min_custom_tool_number: 4
+      tool_args:
+        get_employee_id:
+          employee_name: amanda davis
+        fetch_leave_balance:
+          employee_id: AMAD36528XY
+          leave_type: sick
+        validate_leave_type:
+          employee_id: AMAD36528XY
+          leave_type: sick
+        check_pending_leaves:
+          employee_id: AMAD36528XY
+
+  - id: "49"
+    user_utterance: hello, kevin miller speaking. i'd like to take vacation from february 15th 2024 to april 10th 2024
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+      final_response: "Request rejected"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+      min_custom_tool_number: 4
+      tool_args:
+        get_employee_id:
+          employee_name: kevin miller
+        fetch_leave_balance:
+          employee_id: KEVM74951ZA
+          leave_type: vacation
+        validate_leave_type:
+          employee_id: KEVM74951ZA
+          leave_type: vacation
+        check_pending_leaves:
+          employee_id: KEVM74951ZA
+
+  - id: "50"
+    user_utterance: hi, this is rachel taylor. i want to request leave from feb 3rd 2024 through march 18th 2024
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+      final_response: "Request rejected"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+      min_custom_tool_number: 4
+      tool_args:
+        get_employee_id:
+          employee_name: rachel taylor
+        fetch_leave_balance:
+          employee_id: RACT59237BC
+          leave_type: vacation
+        validate_leave_type:
+          employee_id: RACT59237BC
+          leave_type: vacation
+        check_pending_leaves:
+          employee_id: RACT59237BC
+
+  - id: "51"
+    user_utterance: good morning, james anderson here. i need to take time off from february 25th 2024 to april 5th 2024
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+      final_response: "Request rejected"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+      min_custom_tool_number: 4
+      tool_args:
+        get_employee_id:
+          employee_name: james anderson
+        fetch_leave_balance:
+          employee_id: JAMA82649DE
+          leave_type: vacation
+        validate_leave_type:
+          employee_id: JAMA82649DE
+          leave_type: vacation
+        check_pending_leaves:
+          employee_id: JAMA82649DE
+
+  - id: "52"
+    user_utterance: hello, stephanie white speaking. i'd like to request unpaid leave from feb 12th 2024 through march 28th 2024
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+      final_response: "Request rejected"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+      min_custom_tool_number: 4
+      tool_args:
+        get_employee_id:
+          employee_name: stephanie white
+        fetch_leave_balance:
+          employee_id: STEW46385FG
+          leave_type: unpaid
+        validate_leave_type:
+          employee_id: STEW46385FG
+          leave_type: unpaid
+        check_pending_leaves:
+          employee_id: STEW46385FG
+
+  - id: "53"
+    user_utterance: hi there, daniel lee here. i want to take sick leave from february 8th 2024 to march 22nd 2024
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+      final_response: "Request rejected"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+      min_custom_tool_number: 4
+      tool_args:
+        get_employee_id:
+          employee_name: daniel lee
+        fetch_leave_balance:
+          employee_id: DANL73162HI
+          leave_type: sick
+        validate_leave_type:
+          employee_id: DANL73162HI
+          leave_type: sick
+        check_pending_leaves:
+          employee_id: DANL73162HI
+
+  - id: "54"
+    user_utterance: good afternoon, michelle clark speaking. i need vacation leave from february 18th 2024 through april 8th 2024
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+      final_response: "Request rejected"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+      min_custom_tool_number: 4
+      tool_args:
+        get_employee_id:
+          employee_name: michelle clark
+        fetch_leave_balance:
+          employee_id: MICL91574JK
+          leave_type: vacation
+        validate_leave_type:
+          employee_id: MICL91574JK
+          leave_type: vacation
+        check_pending_leaves:
+          employee_id: MICL91574JK
+
+  - id: "55"
+    user_utterance: hello, christopher martinez here. i'd like to request time for a family trip from feb 28th 2024 to march 20th 2024
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+      final_response: "Request rejected"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+      min_custom_tool_number: 4
+      tool_args:
+        get_employee_id:
+          employee_name: christopher martinez
+        fetch_leave_balance:
+          employee_id: CHRM58739LM
+          leave_type: vacation
+        validate_leave_type:
+          employee_id: CHRM58739LM
+          leave_type: vacation
+        check_pending_leaves:
+          employee_id: CHRM58739LM
+  - id: "56"
+    user_utterance: hello, patricia johnson here. i need to take sick leave from february 5th 2024 through march 20th 2024
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+      final_response: "Request rejected"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+      min_custom_tool_number: 4
+      tool_args:
+        get_employee_id:
+          employee_name: patricia johnson
+        fetch_leave_balance:
+          employee_id: PATJ64829NO
+          leave_type: sick
+        validate_leave_type:
+          employee_id: PATJ64829NO
+          leave_type: sick
+        check_pending_leaves:
+          employee_id: PATJ64829NO
+
+  - id: "57"
+    user_utterance: hi there, thomas williams speaking. i want to request vacation leave from feb 12th 2024 to march 15th 2024
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+      final_response: "Request rejected"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+      min_custom_tool_number: 4
+      tool_args:
+        get_employee_id:
+          employee_name: thomas williams
+        fetch_leave_balance:
+          employee_id: THOW92583PQ
+          leave_type: vacation
+        validate_leave_type:
+          employee_id: THOW92583PQ
+          leave_type: vacation
+        check_pending_leaves:
+          employee_id: THOW92583PQ
+
+  - id: "58"
+    user_utterance: good morning, karen martinez here. i'd like to take unpaid leave from february 1st 2024 through march 10th 2024
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+      final_response: "Request rejected"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+      min_custom_tool_number: 4
+      tool_args:
+        get_employee_id:
+          employee_name: karen martinez
+        fetch_leave_balance:
+          employee_id: KARM37194RS
+          leave_type: unpaid
+        validate_leave_type:
+          employee_id: KARM37194RS
+          leave_type: unpaid
+        check_pending_leaves:
+          employee_id: KARM37194RS
+
+  - id: "59"
+    user_utterance: hello, gregory smith speaking. i need to request sick leave from feb 18th 2024 to march 25th 2024
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+      final_response: "Request rejected"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+      min_custom_tool_number: 4
+      tool_args:
+        get_employee_id:
+          employee_name: gregory smith
+        fetch_leave_balance:
+          employee_id: GRES75648TU
+          leave_type: sick
+        validate_leave_type:
+          employee_id: GRES75648TU
+          leave_type: sick
+        check_pending_leaves:
+          employee_id: GRES75648TU
+
+  - id: "60"
+    user_utterance: hi, this is nancy davis. i want to take vacation leave from february 22nd 2024 through march 8th 2024
+    ground_truth:
+      orchestrator:
+        agent_selections:
+          - - user_information_retriever_agent
+            - balance_checking_agent
+      final_response: "Request rejected"
+      tool_order:
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+          - check_pending_leaves
+        - - get_employee_id
+          - fetch_leave_balance
+          - validate_leave_type
+      min_custom_tool_number: 4
+      tool_args:
+        get_employee_id:
+          employee_name: nancy davis
+        fetch_leave_balance:
+          employee_id: NAND48275VW
+          leave_type: vacation
+        validate_leave_type:
+          employee_id: NAND48275VW
+          leave_type: vacation
+        check_pending_leaves:
+          employee_id: NAND48275VW

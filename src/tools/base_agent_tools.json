@@ -1,0 +1,64 @@
+{
+  "communicate_with_team": {
+    "type": "function",
+    "function": {
+      "name": "communicate_with_team",
+      "description": "Request help from other agents when unable to complete a task. Give a detailed description of what is needed.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "A detailed description of what is needed from other agents."
+          }
+        },
+        "required": [
+          "message"
+        ]
+      }
+    }
+  },
+  "communicate_with_agent": {
+    "type": "function",
+    "function": {
+      "name": "communicate_with_agent",
+      "description": "Request help from another agent when unable to complete a task. Give a detailed description of what is needed from the agent. Here are the other agents and their proficiencies: {{AGENT_PROFICIENCIES_PLACEHOLDER}}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "agent": {
+            "type": "string",
+            "description": "Name of the agent you need help from."
+          },
+          "message": {
+            "type": "string",
+            "description": "A detailed description of what is needed from other agents."
+          }
+        },
+        "required": [
+          "message",
+          "agent"
+        ]
+      }
+    }
+  },
+  "finish": {
+    "type": "function",
+    "function": {
+      "name": "finish",
+      "description": "You MUST call this tool to end your task. Use this when all steps have been completed or if execution should stop.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "A summary of what was accomplished, what information was collected, any final decisions made, why execution is ending, and any unresolved tasks."
+          }
+        },
+        "required": [
+          "message"
+        ]
+      }
+    }
+  }
+}

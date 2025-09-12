@@ -1,0 +1,40 @@
+{
+  "synthesize_collected_information": {
+    "type": "function",
+    "function": {
+      "name": "synthesize_collected_information",
+      "description": "Use this tool when you have collected information from the results of calling other tools, and you want to carefully consider the collected information and synthesize it either to create a cohesive response or come to a decision.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "synthesized_information": {
+            "type": "string",
+            "description": "Your thought process for synthesizing the collected information and your final synthesized response or decision "
+          }
+        },
+        "required": [
+          "synthesized_information"
+        ]
+      }
+    }
+  },
+  "math": {
+    "type": "function",
+    "function": {
+      "name": "math",
+      "description": "Use this when you need to do math.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "input": {
+            "type": "string",
+            "description": "Describe the math problem, describe your thinking process, and then describe the solution you arrive at."
+          }
+        },
+        "required": [
+          "message"
+        ]
+      }
+    }
+  }
+}
