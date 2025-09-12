@@ -47,26 +47,13 @@ AgentArch/
 │   │   ├── requesting_time_off.yaml
 │   │   ├── triage_cases.yaml
 │   │   └── prompts.yaml
-├── results/ # sample results folder structure
-│   └── test/ # project name
-│       └── requesting_time_off/ # use case name
-│           └── claude_sonnet_4/ # model name
-│               └── single_agent/ # orchestration mode
-│                   └── no_thinking/ # thinking 
-│                       └── function_calling/ # function calling
-│                           └── transparent/ # memory style
-│                               └── 2025-09-12_13-02-08/ # timestamp
-|                                   ├── metadata.json
-|                                   ├── overall_scores.json
-|                                   ├── perf_stats_overall.json
-|                                   ├── record_level.csv
 ├── src/
-│   ├── tools/            # Tool implementations
+│   ├── tools/            
 │   └── utils/
-│       ├── agent.py      # Agent implementations
-│       ├── metrics.py    # Evaluation metrics
-│       └── run.py        # Main execution script
-├── .env.example          # Environment template
+│   ├── agent.py     
+│   ├── metrics.py    
+│   └── run.py  # Main execution script
+├── .env.example  
 ├── .gitignore
 └── requirements.txt
 ```
