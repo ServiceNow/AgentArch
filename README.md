@@ -24,6 +24,8 @@ AgentArch provides empirical insights into how different design dimensions inter
 git clone https://github.com/ServiceNow/AgentArch.git
 cd AgentArch
 pip install -r requirements.txt
+cp .env.example .env
+# replace placeholders with real api keys and endpoints
 ```
 
 ## Quick Start
