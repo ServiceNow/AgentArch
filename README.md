@@ -124,7 +124,7 @@ pip install -r requirements.txt
 ## Quick Start
 
 ```python
-src/run.py --mode single_agent --usecase requesting_time_off --model claude_sonnet_4 --agent_type function_calling --project test --debug
+python -m src.run --mode single_agent --usecase requesting_time_off --model claude_sonnet_4 --agent_type function_calling --project test --debug
 ```
 
 ## Key Recommendations
