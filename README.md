@@ -18,6 +18,21 @@ AgentArch provides empirical insights into how different design dimensions inter
 - **Multi-Agent ReAct Limitations**: Consistent underperformance across all models in multi-agent ReAct configurations
 - **Reliability Challenges**: Pass^K scores peak at only 6.34%, indicating fundamental gaps for production deployment
 
+## Installation
+
+```bash
+git clone https://github.com/ServiceNow/AgentArch.git
+cd AgentArch
+pip install -r requirements.txt
+```
+
+## Quick Start
+
+```python
+python -m src.run --mode single_agent --usecase requesting_time_off --model claude_sonnet_4 --agent_type function_calling --project test --debug
+```
+
+
 ## Repository Structure
 
 ```
@@ -53,21 +68,6 @@ AgentArch/
 ├── .gitignore
 └── requirements.txt
 ```
-
-## Installation
-
-```bash
-git clone https://github.com/ServiceNow/AgentArch.git
-cd AgentArch
-pip install -r requirements.txt
-```
-
-## Quick Start
-
-```python
-python -m src.run --mode single_agent --usecase requesting_time_off --model claude_sonnet_4 --agent_type function_calling --project test --debug
-```
-
 
 ## Enterprise Use Cases
 
