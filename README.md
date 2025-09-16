@@ -2,6 +2,8 @@
 
 A systematic evaluation framework for agentic AI systems across diverse architectural configurations and enterprise use cases.
 
+Link to paper: https://arxiv.org/abs/2509.10769
+
 ## Overview
 
 AgentArch provides empirical insights into how different design dimensions interact within complex multi-agent systems. This benchmark evaluates 18 distinct agentic configurations across state-of-the-art large language models, examining four critical system dimensions:
