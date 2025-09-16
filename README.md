@@ -136,6 +136,17 @@ Success requires simultaneous achievement of:
 - **Memory Management Impact**: Minimal performance differences between complete and summarized memory
 
 ## Citation
+```
+@misc{bogavelli2025agentarchcomprehensivebenchmarkevaluate,
+      title={AgentArch: A Comprehensive Benchmark to Evaluate Agent Architectures in Enterprise}, 
+      author={Tara Bogavelli and Roshnee Sharma and Hari Subramani},
+      year={2025},
+      eprint={2509.10769},
+      archivePrefix={arXiv},
+      primaryClass={cs.AI},
+      url={https://arxiv.org/abs/2509.10769}, 
+}
+```
 
 
 ## License
