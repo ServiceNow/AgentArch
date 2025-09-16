@@ -1,142 +1,296 @@
-# AgentArch: A Comprehensive Benchmark to Evaluate Agent Architectures in Enterprise
+# 🏗️ AgentArch: A Comprehensive Benchmark to Evaluate Agent Architectures in Enterprise
 
-A systematic evaluation framework for agentic AI systems across diverse architectural configurations and enterprise use cases.
+<div align="center">
 
-Link to paper: https://arxiv.org/abs/2509.10769
+[![arXiv](https://img.shields.io/badge/arXiv-2509.10769-b31b1b.svg)](https://arxiv.org/abs/2509.10769)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 
-## Overview
+*A systematic evaluation framework for agentic AI systems across diverse architectural configurations and enterprise use cases.*
 
-AgentArch provides empirical insights into how different design dimensions interact within complex multi-agent systems. This benchmark evaluates 18 distinct agentic configurations across state-of-the-art large language models, examining four critical system dimensions:
+</div>
 
-- **Orchestration Strategy**: Single-agent vs. multi-agent systems
-- **Agent Implementation**: ReAct vs. function calling approaches  
-- **Memory Architecture**: Complete vs. summarized memory management
-- **Thinking Tool Integration**: Mathematical reasoning and information synthesis tools
+---
 
-## Key Findings
+## 🌟 Overview
 
-- **No Universal Architecture**: Models demonstrate significant architectural preferences that vary by use case complexity
-- **Performance Gaps**: Even top models achieve only 35.3% success on complex enterprise tasks and 70.8% on simpler workflows
-- **Multi-Agent ReAct Limitations**: Consistent underperformance across all models in multi-agent ReAct configurations
-- **Reliability Challenges**: Pass^K scores peak at only 6.34%, indicating fundamental gaps for production deployment
+AgentArch provides empirical insights into how different design dimensions interact within complex multi-agent systems. This benchmark evaluates **18 distinct agentic configurations** across state-of-the-art large language models, examining four critical system dimensions:
 
-## Installation
+<table>
+<tr>
+<td>
+
+### 🎯 **Orchestration Strategy**
+Single-agent vs. multi-agent systems
+
+</td>
+<td>
+
+### ⚙️ **Agent Implementation**  
+ReAct vs. function calling approaches
+
+</td>
+</tr>
+<tr>
+<td>
+
+### 🧠 **Memory Architecture**
+Complete vs. summarized memory management
+
+</td>
+<td>
+
+### 🔧 **Thinking Tool Integration**
+Mathematical reasoning and information synthesis tools
+
+</td>
+</tr>
+</table>
+
+---
+
+## 🔍 Key Findings
+
+> **TL;DR**: No one-size-fits-all solution exists for enterprise agentic systems
+
+| Finding | Impact | 📊 |
+|---------|--------|-----|
+| **No Universal Architecture** | Models demonstrate significant architectural preferences that vary by use case complexity | 🎯 |
+| **Performance Gaps** | Even top models achieve only 35.3% success on complex enterprise tasks and 70.8% on simpler workflows | 📉 |
+| **Multi-Agent ReAct Limitations** | Consistent underperformance across all models in multi-agent ReAct configurations | ⚠️ |
+| **Reliability Challenges** | Pass^K scores peak at only 6.34%, indicating fundamental gaps for production deployment | 🚨 |
+
+---
+
+## 🚀 Quick Start
+
+### Installation
 
 ```bash
+# Clone the repository
 git clone https://github.com/ServiceNow/AgentArch.git
 cd AgentArch
+
+# Install dependencies
 pip install -r requirements.txt
+
+# Set up environment
 cp .env.example .env
-# replace placeholders with real api keys and endpoints
+# 🔑 Replace placeholders with real API keys and endpoints
 ```
 
-## Quick Start
+### Run Your First Evaluation
 
 ```python
-python -m src.run --mode single_agent --usecase requesting_time_off --model claude_sonnet_4 --agent_type function_calling --project test --debug
+python -m src.run \
+  --mode single_agent \
+  --usecase requesting_time_off \
+  --model claude_sonnet_4 \
+  --agent_type function_calling \
+  --project test \
+  --debug
 ```
 
+---
 
-## Repository Structure
+## 📁 Repository Structure
 
 ```
 AgentArch/
-├── configs/
-│   ├── mocked_data/
+├── 📁 configs/
+│   ├── 🔧 mocked_data/
 │   │   ├── requesting_time_off_mocked_tool_calls.json
 │   │   └── triage_cases_mocked_tool_calls.json
-│   ├── use_case_configs/
+│   ├── ⚙️ use_case_configs/
 │   │   ├── requesting_time_off.yaml
 │   │   ├── triage_cases.yaml
-│   │   └── prompts.yaml
-├── src/
-│   ├── tools/            
-│   └── utils/
-│   ├── agent.py     
-│   ├── metrics.py    
-│   └── run.py  # Main execution script
-├── .env.example  
-├── .gitignore
-└── requirements.txt
+│   ├── ⚙📜 prompts.yaml
+├── 📁 src/
+│   ├── 🛠️ tools/            
+│   ├── 🔧 utils/
+│   ├── 🤖 agent.py     
+│   ├── 📊 metrics.py    
+│   └── ▶️ run.py  # Main execution script
+├── 📄 .env.example  
+├── 📄 .gitignore
+├── 📄 LICENSE
+└── 📄 requirements.txt
 ```
 
-## Enterprise Use Cases
+---
 
-### 1. Requesting Time Off (TO) - Simple Workflow
-- **Complexity**: Basic multi-step reasoning with clear success criteria
-- **Tools**: 8 custom enterprise tools
-- **Agents**: 3 specialized agents
-- **Challenges**: Date calculations, leave balance verification, policy compliance
+## 🏢 Enterprise Use Cases
 
-### 2. Customer Request Routing (CR) - Complex Workflow  
-- **Complexity**: Intelligent classification and escalation decisions
-- **Tools**: 31 custom enterprise tools
-- **Agents**: 9 specialized agents
-- **Challenges**: Ambiguous request handling, context preservation, routing logic
+<div align="center">
 
-## Evaluated Models
+### 1. 📅 Requesting Time Off (TO) - Simple Workflow
 
-- OpenAI GPT-4.1
-- OpenAI GPT-4o  
-- OpenAI GPT-4.1-mini
-- OpenAI o3-mini
-- LLaMA 3.3 70B
-- Anthropic Claude Sonnet 4
+</div>
 
-## Architectural Dimensions
+| Aspect | Details |
+|--------|---------|
+| **🎯 Complexity** | Basic multi-step reasoning with clear success criteria |
+| **🛠️ Tools** | 8 custom enterprise tools |
+| **🤖 Agents** | 3 specialized agents |
+| **💡 Challenges** | Date calculations, leave balance verification, policy compliance |
 
-### Orchestration Strategies
-1. **Orchestrator-led, Isolated Agents**: Centralized task assignment with mediated communication
-   <img width="400" alt="indirect" src="https://github.com/user-attachments/assets/64310502-3a7c-4bf6-b28c-d7330db36e70" />
-3. **Orchestrator-led, Open Network**: Initial task assignment with direct agent-to-agent communication
-   <img width="400" alt="direct" src="https://github.com/user-attachments/assets/e1a2a174-4761-4925-b43f-b3a1de76a929" />
-5. **Single Agent**: Unified agent with access to all tools
+<div align="center">
 
+### 2. 🎫 Customer Request Routing (CR) - Complex Workflow
 
-### Agent Styles
-- **Function Calling**: Direct tool selection using native model capabilities
-- **ReAct**: Structured reasoning-action framework with explicit thought processes
+</div>
 
-### Memory Management
-- **Complete Memory**: Full visibility into all previous tool calls and responses
-- **Summarized Memory**: Condensed information sharing to manage context length
+| Aspect | Details |
+|--------|---------|
+| **🎯 Complexity** | Intelligent classification and escalation decisions |
+| **🛠️ Tools** | 31 custom enterprise tools |
+| **🤖 Agents** | 9 specialized agents |
+| **💡 Challenges** | Ambiguous request handling, context preservation, routing logic |
 
-### Thinking Tools
-- **Math Tool**: Structured mathematical reasoning and calculations
-- **Synthesis Tool**: Information organization and analysis capabilities
+---
 
-## Evaluation Metrics
+## 🤖 Evaluated Models
 
-### Primary Metric: Acceptable Score
-Success requires simultaneous achievement of:
-- Correct tool selection
-- Accurate tool arguments (100% accuracy required)
-- Correct final decision
+<div align="center">
 
-### Reliability Metrics
+| Provider | Models | Status |
+|----------|--------|--------|
+| **OpenAI** | GPT-4.1, GPT-4o, GPT-4.1-mini, o3-mini | ✅ |
+| **Meta** | LLaMA 3.3 70B | ✅ |
+| **Anthropic** | Claude Sonnet 4 | ✅ |
+
+</div>
+
+---
+
+## 🏗️ Architectural Dimensions
+
+### 🎭 Orchestration Strategies
+
+#### 1. 🎪 Orchestrator-led, Isolated Agents
+*Centralized task assignment with mediated communication*
+
+<img width="400" alt="indirect" src="https://github.com/user-attachments/assets/64310502-3a7c-4bf6-b28c-d7330db36e70" />
+
+#### 2. 🌐 Orchestrator-led, Open Network  
+*Initial task assignment with direct agent-to-agent communication*
+
+<img width="400" alt="direct" src="https://github.com/user-attachments/assets/e1a2a174-4761-4925-b43f-b3a1de76a929" />
+
+#### 3. 🤖 Single Agent
+*Unified agent with access to all tools*
+
+### 🎨 Agent Styles
+
+<table>
+<tr>
+<td align="center">
+
+### 📞 **Function Calling**
+Direct tool selection using native model capabilities
+
+</td>
+<td align="center">
+
+### 🧠 **ReAct**
+Structured reasoning-action framework with explicit thought processes
+
+</td>
+</tr>
+</table>
+
+### 💾 Memory Management
+
+<table>
+<tr>
+<td align="center">
+
+### 📚 **Complete Memory**
+Full visibility into all previous tool calls and responses
+
+</td>
+<td align="center">
+
+### 📝 **Summarized Memory**
+Condensed information sharing to manage context length
+
+</td>
+</tr>
+</table>
+
+### 🧮 Thinking Tools
+
+<table>
+<tr>
+<td align="center">
+
+### ➕ **Math Tool**
+Structured mathematical reasoning and calculations
+
+</td>
+<td align="center">
+
+### 🔍 **Synthesis Tool**
+Information organization and analysis capabilities
+
+</td>
+</tr>
+</table>
+
+---
+
+## 📊 Evaluation Metrics
+
+### 🎯 Primary Metric: Acceptable Score
+
+Success requires **simultaneous** achievement of:
+- ✅ Correct tool selection
+- ✅ Accurate tool arguments (100% accuracy required)
+- ✅ Correct final decision
+
+### 🔄 Reliability Metrics
 - **Pass@1**: Success rate over k=8 trials
 - **Pass^K**: Probability of all k trials succeeding
 
-### Behavioral Metrics
-- Hallucination rates (non-existent tool/agent selection)
-- Tool repetition rates
-- Missing required tools
+### 📈 Behavioral Metrics
+- 🚫 Hallucination rates (non-existent tool/agent selection)
+- 🔄 Tool repetition rates
+- ❌ Missing required tools
 
-## Key Recommendations
+---
 
-### For Practitioners
-- **Avoid Multi-Agent ReAct**: Poor performance across all tested models
-- **Use Multi-Agent for Final Decisions**: Higher accuracy in decision-making despite tool selection challenges
-- **Model-Specific Architectures**: Test multiple configurations rather than assuming universal optima
-- **Thinking Tools for Non-Reasoning Models**: Significant performance improvements on calculation-heavy tasks
+## 💡 Key Recommendations
 
-### For Researchers
-- **Architecture-Use Case Interaction**: Models perform optimally under different architectures depending on task complexity
-- **Reliability vs Performance**: Consider both accuracy and consistency for enterprise deployment
-- **Memory Management Impact**: Minimal performance differences between complete and summarized memory
+<div align="center">
 
-## Citation
-```
+### 👨‍💼 For Practitioners
+
+</div>
+
+| Recommendation | Rationale |
+|----------------|-----------|
+| ❌ **Avoid Multi-Agent ReAct** | Poor performance across all tested models |
+| ✅ **Use Multi-Agent for Final Decisions** | Higher accuracy in decision-making despite tool selection challenges |
+| 🎯 **Model-Specific Architectures** | Test multiple configurations rather than assuming universal optima |
+| 🧮 **Thinking Tools for Non-Reasoning Models** | Significant performance improvements on calculation-heavy tasks for non-reasoning models |
+
+<div align="center">
+
+### 🔬 For Researchers
+
+</div>
+
+| Focus Area | Insight |
+|------------|---------|
+| 🔄 **Architecture-Use Case Interaction** | Models perform optimally under different architectures depending on task complexity |
+| ⚖️ **Reliability vs Performance** | Consider both accuracy and consistency for enterprise deployment |
+| 💾 **Memory Management Impact** | Minimal performance differences between complete and summarized memory |
+
+---
+
+## 📚 Citation
+
+```bibtex
 @misc{bogavelli2025agentarchcomprehensivebenchmarkevaluate,
       title={AgentArch: A Comprehensive Benchmark to Evaluate Agent Architectures in Enterprise}, 
       author={Tara Bogavelli and Roshnee Sharma and Hari Subramani},
@@ -148,11 +302,26 @@ Success requires simultaneous achievement of:
 }
 ```
 
+---
 
-## License
-AgentArch is licensed under the Apache 2.0 License.
+## 📄 License
 
-## Contact
+AgentArch is licensed under the **Apache 2.0 License**.
+
+## 📞 Contact
 
 For questions or collaboration opportunities:
-- Email: tara.bogavelli@servicenow.com
+
+<div align="center">
+
+[![Email](https://img.shields.io/badge/Email-tara.bogavelli%40servicenow.com-red?style=for-the-badge&logo=gmail)](mailto:tara.bogavelli@servicenow.com)
+
+</div>
+
+---
+
+<div align="center">
+
+**⭐ If this project helps your research, please consider giving it a star! ⭐**
+
+</div>
