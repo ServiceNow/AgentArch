@@ -159,6 +159,8 @@ AgentArch/
 | **Meta** | LLaMA 3.3 70B | ✅ |
 | **Anthropic** | Claude Sonnet 4 | ✅ |
 
+*Framework includes support for evaluating Gemini family models as well as Qwen models
+
 </div>
 
 ---
