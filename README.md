@@ -150,6 +150,7 @@ Success requires simultaneous achievement of:
 
 
 ## License
+AgentArch is licensed under the Apache 2.0 License.
 
 ## Contact
 
