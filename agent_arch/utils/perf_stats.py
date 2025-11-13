@@ -3,8 +3,7 @@ from collections import defaultdict
 
 import numpy as np
 import pandas as pd
-
-from src.utils.model_response import ErrorTracker, ModelResponse
+from agent_arch.utils.model_response import ErrorTracker, ModelResponse
 
 
 class PerfStats:
@@ -105,24 +104,33 @@ class PerfStats:
             except ValueError as e:
                 # Handle length mismatch by padding shorter arrays
                 if "All arrays must be of the same length" in str(e):
-                    max_length = max(len(values) if isinstance(values, list) else 1
-                                     for values in metrics.values())
+                    max_length = max(
+                        len(values) if isinstance(values, list) else 1
+                        for values in metrics.values()
+                    )
 
                     padded_metrics = {}
                     for metric_name, values in metrics.items():
                         if isinstance(values, list):
                             if len(values) < max_length:
                                 # Pad with appropriate default values
-                                if metric_name in ['is_failure', 'is_empty', 'success']:
+                                if metric_name in ["is_failure", "is_empty", "success"]:
                                     default_value = False
-                                elif metric_name in ['input_tokens', 'output_tokens', 'reasoning_tokens', 'time_per_token']:
+                                elif metric_name in [
+                                    "input_tokens",
+                                    "output_tokens",
+                                    "reasoning_tokens",
+                                    "time_per_token",
+                                ]:
                                     default_value = 0.0
-                                elif metric_name == 'response_code':
+                                elif metric_name == "response_code":
                                     default_value = 200
                                 else:
                                     default_value = None
 
-                                padded_values = values + [default_value] * (max_length - len(values))
+                                padded_values = values + [default_value] * (
+                                    max_length - len(values)
+                                )
                                 padded_metrics[metric_name] = padded_values
                             else:
                                 padded_metrics[metric_name] = values
@@ -145,7 +153,11 @@ class PerfStats:
                 json.dump(self.statistics(), f, indent=4)
 
     def add_all_stats(self, model_name: str, model_response: ModelResponse):
-        llm_response = model_response.llm_response if 200 <= model_response.response_code < 300 else ""
+        llm_response = (
+            model_response.llm_response
+            if 200 <= model_response.response_code < 300
+            else ""
+        )
         self.add(
             model_name,
             "input",
@@ -156,14 +168,22 @@ class PerfStats:
         self.add(model_name, "model_parameters", model_response.model_parameters)
         self.add(model_name, "llm_response", model_response.llm_response)
         self.add(model_name, "raw_response", model_response.raw_response)
-        self.add(model_name, "tool_calls", getattr(model_response, 'tool_calls'))
+        self.add(model_name, "tool_calls", getattr(model_response, "tool_calls"))
         self.add(model_name, "raw_response_object", model_response.raw_response_object)
         self.add(model_name, "is_failure", model_response.is_failure)
         self.add(model_name, "is_empty", llm_response.strip() == "")
         self.add(model_name, "reasoning_response", model_response.reasoning_response)
-        self.add(model_name, "reasoning_possible_to_extract", model_response.reasoning_possible_to_extract)
+        self.add(
+            model_name,
+            "reasoning_possible_to_extract",
+            model_response.reasoning_possible_to_extract,
+        )
         self.add(model_name, "agent_messages", model_response.agent_messages)
-        self.add(model_name, "reasoning_correct_format", model_response.reasoning_correct_format)
+        self.add(
+            model_name,
+            "reasoning_correct_format",
+            model_response.reasoning_correct_format,
+        )
         self.add(model_name, "stop_reason", model_response.stop_reason)
         self.add(
             model_name,
@@ -175,7 +195,10 @@ class PerfStats:
         if model_response.performance:
             input_tokens = model_response.performance.prompt_tokens
         elif isinstance(model_response.input_prompt, list):
-            input_tokens = sum(len(text.split()) for text in self._iter_prompt_texts(model_response.input_prompt))
+            input_tokens = sum(
+                len(text.split())
+                for text in self._iter_prompt_texts(model_response.input_prompt)
+            )
         else:
             input_tokens = len(model_response.input_prompt.split())
         self.add(model_name, "input_tokens", float(input_tokens))
@@ -189,13 +212,17 @@ class PerfStats:
         self.add(
             model_name,
             "reasoning_tokens",
-            model_response.performance.reasoning_tokens if model_response.performance else None,
+            model_response.performance.reasoning_tokens
+            if model_response.performance
+            else None,
         )
         self.add(model_name, "success", model_response.response_code == 200)
         self.add(
             model_name,
             "errors",
-            model_response.error_tracker if model_response.error_tracker else model_response.response_code == 429,
+            model_response.error_tracker
+            if model_response.error_tracker
+            else model_response.response_code == 429,
         )
         self.add(
             model_name,
@@ -210,20 +237,46 @@ class PerfStats:
         stats = self.statistics()
         if step == 0:
             for model_name, model_stats in stats.items():
-                if all(k in model_stats for k in ("output_tokens", "relative_output_tokens", "reasoning_tokens")):
+                if all(
+                    k in model_stats
+                    for k in (
+                        "output_tokens",
+                        "relative_output_tokens",
+                        "reasoning_tokens",
+                    )
+                ):
                     return {
-                        f"{model_name}_average_output_tokens": model_stats["output_tokens"]["average"],
-                        f"{model_name}_average_relative_output_tokens": model_stats["relative_output_tokens"]["average"],
-                        f"{model_name}_average_reasoning_tokens": model_stats["reasoning_tokens"]["average"],
+                        f"{model_name}_average_output_tokens": model_stats[
+                            "output_tokens"
+                        ]["average"],
+                        f"{model_name}_average_relative_output_tokens": model_stats[
+                            "relative_output_tokens"
+                        ]["average"],
+                        f"{model_name}_average_reasoning_tokens": model_stats[
+                            "reasoning_tokens"
+                        ]["average"],
                     }
         else:
             step_str = str(step)
             for model_name, model_stats in stats.items():
-                if step_str in model_name and all(k in model_stats for k in ("output_tokens", "relative_output_tokens", "reasoning_tokens")):
+                if step_str in model_name and all(
+                    k in model_stats
+                    for k in (
+                        "output_tokens",
+                        "relative_output_tokens",
+                        "reasoning_tokens",
+                    )
+                ):
                     return {
-                        f"{model_name}_average_output_tokens": model_stats["output_tokens"]["average"],
-                        f"{model_name}_average_relative_output_tokens": model_stats["relative_output_tokens"]["average"],
-                        f"{model_name}_average_reasoning_tokens": model_stats["reasoning_tokens"]["average"],
+                        f"{model_name}_average_output_tokens": model_stats[
+                            "output_tokens"
+                        ]["average"],
+                        f"{model_name}_average_relative_output_tokens": model_stats[
+                            "relative_output_tokens"
+                        ]["average"],
+                        f"{model_name}_average_reasoning_tokens": model_stats[
+                            "reasoning_tokens"
+                        ]["average"],
                     }
         return {}
 

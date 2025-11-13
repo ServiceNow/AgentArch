@@ -327,13 +327,14 @@
   "26": {
     "fetch_leave_balance": 19,
     "validate_leave_type": true,
-    "check_pending_leaves": [{
-      "leave_type": "vacation",
-      "start_date": "2025-07-22",
-      "end_date": "2025-07-26",
-      "status": "pending"
-    }]
-  ,
+    "check_pending_leaves": [
+      {
+        "leave_type": "vacation",
+        "start_date": "2025-07-22",
+        "end_date": "2025-07-26",
+        "status": "pending"
+      }
+    ],
     "detect_leave_conflicts": [],
     "route_for_approval": {
       "decision": "Pending check",
@@ -346,12 +347,14 @@
   "27": {
     "fetch_leave_balance": 11,
     "validate_leave_type": true,
-    "check_pending_leaves": [{
-      "leave_type": "sick",
-      "start_date": "2025-01-15",
-      "end_date": "2025-01-18",
-      "status": "pending"
-    }],
+    "check_pending_leaves": [
+      {
+        "leave_type": "sick",
+        "start_date": "2025-01-15",
+        "end_date": "2025-01-18",
+        "status": "pending"
+      }
+    ],
     "detect_leave_conflicts": [],
     "route_for_approval": {
       "decision": "Pending check",
@@ -364,12 +367,14 @@
   "28": {
     "fetch_leave_balance": 21,
     "validate_leave_type": true,
-    "check_pending_leaves": [{
-      "leave_type": "vacation",
-      "start_date": "2025-03-10",
-      "end_date": "2025-03-16",
-      "status": "pending"
-    }],
+    "check_pending_leaves": [
+      {
+        "leave_type": "vacation",
+        "start_date": "2025-03-10",
+        "end_date": "2025-03-16",
+        "status": "pending"
+      }
+    ],
     "detect_leave_conflicts": [],
     "route_for_approval": {
       "decision": "Pending check",
@@ -382,12 +387,14 @@
   "29": {
     "fetch_leave_balance": 17,
     "validate_leave_type": true,
-    "check_pending_leaves": [{
-      "leave_type": "unpaid",
-      "start_date": "2025-02-05",
-      "end_date": "2025-02-14",
-      "status": "pending"
-    }],
+    "check_pending_leaves": [
+      {
+        "leave_type": "unpaid",
+        "start_date": "2025-02-05",
+        "end_date": "2025-02-14",
+        "status": "pending"
+      }
+    ],
     "detect_leave_conflicts": [],
     "route_for_approval": {
       "decision": "Pending check",
@@ -400,12 +407,14 @@
   "30": {
     "fetch_leave_balance": 7,
     "validate_leave_type": true,
-    "check_pending_leaves": [{
-      "leave_type": "sick",
-      "start_date": "2025-03-20",
-      "end_date": "2025-03-22",
-      "status": "pending"
-    }],
+    "check_pending_leaves": [
+      {
+        "leave_type": "sick",
+        "start_date": "2025-03-20",
+        "end_date": "2025-03-22",
+        "status": "pending"
+      }
+    ],
     "detect_leave_conflicts": [],
     "route_for_approval": {
       "decision": "Pending check",
@@ -418,17 +427,20 @@
   "31": {
     "fetch_leave_balance": 20,
     "validate_leave_type": true,
-    "check_pending_leaves": [{
-      "leave_type": "vacation",
-      "start_date": "2025-04-14",
-      "end_date": "2025-04-17",
-      "status": "pending"
-    }, {
-      "leave_type": "vacation",
-      "start_date": "2025-05-26",
-      "end_date": "2025-05-27",
-      "status": "pending"
-    }],
+    "check_pending_leaves": [
+      {
+        "leave_type": "vacation",
+        "start_date": "2025-04-14",
+        "end_date": "2025-04-17",
+        "status": "pending"
+      },
+      {
+        "leave_type": "vacation",
+        "start_date": "2025-05-26",
+        "end_date": "2025-05-27",
+        "status": "pending"
+      }
+    ],
     "detect_leave_conflicts": [],
     "route_for_approval": {
       "decision": "Pending check",
@@ -441,12 +453,14 @@
   "32": {
     "fetch_leave_balance": 8,
     "validate_leave_type": true,
-    "check_pending_leaves": [{
-      "leave_type": "unpaid",
-      "start_date": "2025-07-07",
-      "end_date": "2025-07-09",
-      "status": "pending"
-    }],
+    "check_pending_leaves": [
+      {
+        "leave_type": "unpaid",
+        "start_date": "2025-07-07",
+        "end_date": "2025-07-09",
+        "status": "pending"
+      }
+    ],
     "detect_leave_conflicts": [],
     "route_for_approval": {
       "decision": "Pending check",
@@ -459,12 +473,14 @@
   "33": {
     "fetch_leave_balance": 14,
     "validate_leave_type": true,
-    "check_pending_leaves": [{
-      "leave_type": "sick",
-      "start_date": "2025-08-11",
-      "end_date": "2025-08-16",
-      "status": "pending"
-    }],
+    "check_pending_leaves": [
+      {
+        "leave_type": "sick",
+        "start_date": "2025-08-11",
+        "end_date": "2025-08-16",
+        "status": "pending"
+      }
+    ],
     "detect_leave_conflicts": [],
     "route_for_approval": {
       "decision": "Pending check",
@@ -477,17 +493,20 @@
   "34": {
     "fetch_leave_balance": 25,
     "validate_leave_type": true,
-    "check_pending_leaves": [{
-      "leave_type": "vacation",
-      "start_date": "2025-09-08",
-      "end_date": "2025-09-15",
-      "status": "pending"
-    }, {
-      "leave_type": "vacation",
-      "start_date": "2025-11-24",
-      "end_date": "2025-11-26",
-      "status": "pending"
-    }],
+    "check_pending_leaves": [
+      {
+        "leave_type": "vacation",
+        "start_date": "2025-09-08",
+        "end_date": "2025-09-15",
+        "status": "pending"
+      },
+      {
+        "leave_type": "vacation",
+        "start_date": "2025-11-24",
+        "end_date": "2025-11-26",
+        "status": "pending"
+      }
+    ],
     "detect_leave_conflicts": [],
     "route_for_approval": {
       "decision": "Pending check",
@@ -500,12 +519,14 @@
   "35": {
     "fetch_leave_balance": 13,
     "validate_leave_type": true,
-    "check_pending_leaves": [{
-      "leave_type": "unpaid",
-      "start_date": "2025-10-20",
-      "end_date": "2025-10-23",
-      "status": "pending"
-    }],
+    "check_pending_leaves": [
+      {
+        "leave_type": "unpaid",
+        "start_date": "2025-10-20",
+        "end_date": "2025-10-23",
+        "status": "pending"
+      }
+    ],
     "detect_leave_conflicts": [],
     "route_for_approval": {
       "decision": "Pending check",
@@ -518,12 +539,14 @@
   "36": {
     "fetch_leave_balance": 12,
     "validate_leave_type": true,
-    "check_pending_leaves": [{
-      "leave_type": "sick",
-      "start_date": "2025-11-17",
-      "end_date": "2025-11-21",
-      "status": "pending"
-    }],
+    "check_pending_leaves": [
+      {
+        "leave_type": "sick",
+        "start_date": "2025-11-17",
+        "end_date": "2025-11-21",
+        "status": "pending"
+      }
+    ],
     "detect_leave_conflicts": [],
     "route_for_approval": {
       "decision": "Pending check",
@@ -536,12 +559,14 @@
   "37": {
     "fetch_leave_balance": 18,
     "validate_leave_type": true,
-    "check_pending_leaves": [{
-      "leave_type": "vacation",
-      "start_date": "2025-03-03",
-      "end_date": "2025-03-06",
-      "status": "pending"
-    }],
+    "check_pending_leaves": [
+      {
+        "leave_type": "vacation",
+        "start_date": "2025-03-03",
+        "end_date": "2025-03-06",
+        "status": "pending"
+      }
+    ],
     "detect_leave_conflicts": [],
     "route_for_approval": {
       "decision": "Pending check",
@@ -554,12 +579,14 @@
   "38": {
     "fetch_leave_balance": 10,
     "validate_leave_type": true,
-    "check_pending_leaves": [{
-      "leave_type": "unpaid",
-      "start_date": "2025-02-17",
-      "end_date": "2025-02-19",
-      "status": "pending"
-    }],
+    "check_pending_leaves": [
+      {
+        "leave_type": "unpaid",
+        "start_date": "2025-02-17",
+        "end_date": "2025-02-19",
+        "status": "pending"
+      }
+    ],
     "detect_leave_conflicts": [],
     "route_for_approval": {
       "decision": "Pending check",
@@ -572,12 +599,14 @@
   "39": {
     "fetch_leave_balance": 9,
     "validate_leave_type": true,
-    "check_pending_leaves": [{
-      "leave_type": "sick",
-      "start_date": "2025-04-21",
-      "end_date": "2025-04-23",
-      "status": "pending"
-    }],
+    "check_pending_leaves": [
+      {
+        "leave_type": "sick",
+        "start_date": "2025-04-21",
+        "end_date": "2025-04-23",
+        "status": "pending"
+      }
+    ],
     "detect_leave_conflicts": [],
     "route_for_approval": {
       "decision": "Pending check",
@@ -590,17 +619,20 @@
   "40": {
     "fetch_leave_balance": 19,
     "validate_leave_type": true,
-    "check_pending_leaves": [{
-      "leave_type": "vacation",
-      "start_date": "2025-04-28",
-      "end_date": "2025-05-02",
-      "status": "pending"
-    }, {
-      "leave_type": "vacation",
-      "start_date": "2025-07-14",
-      "end_date": "2025-07-15",
-      "status": "pending"
-    }],
+    "check_pending_leaves": [
+      {
+        "leave_type": "vacation",
+        "start_date": "2025-04-28",
+        "end_date": "2025-05-02",
+        "status": "pending"
+      },
+      {
+        "leave_type": "vacation",
+        "start_date": "2025-07-14",
+        "end_date": "2025-07-15",
+        "status": "pending"
+      }
+    ],
     "detect_leave_conflicts": [],
     "route_for_approval": {
       "decision": "Pending check",

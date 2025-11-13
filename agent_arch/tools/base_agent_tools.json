@@ -12,9 +12,7 @@
             "description": "A detailed description of what is needed from other agents."
           }
         },
-        "required": [
-          "message"
-        ]
+        "required": ["message"]
       }
     }
   },
@@ -35,10 +33,7 @@
             "description": "A detailed description of what is needed from other agents."
           }
         },
-        "required": [
-          "message",
-          "agent"
-        ]
+        "required": ["message", "agent"]
       }
     }
   },
@@ -55,9 +50,7 @@
             "description": "A summary of what was accomplished, what information was collected, any final decisions made, why execution is ending, and any unresolved tasks."
           }
         },
-        "required": [
-          "message"
-        ]
+        "required": ["message"]
       }
     }
   }

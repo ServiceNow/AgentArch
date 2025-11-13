@@ -1,6 +1,7 @@
 use_case_name: Requesting Time Off/Leave (HR)
 filename: requesting_time_off
-use_case_description: This workflow enables employees to request time off (leave)
+use_case_description:
+  This workflow enables employees to request time off (leave)
   and have their request processed efficiently. The process involves checking the
   employee's leave balance, validating the leave type, checking for pending requests,
   routing the request for approval, checking for conflicts, updating records, and
@@ -39,46 +40,53 @@ agents:
     access:
       - user_information_retriever_agent
     tools:
-    - tool_name: fetch_leave_balance
-      tool_description: Retrieves the current leave balance for a specified employee
-        and leave type from the HR system.
-      input_parameters:
-        employee_id:
-          description: The unique identifier of the employee.
-          type: string
-        leave_type:
-          description: The type of leave to check. Must be one of the following leave types - 'vacation', 'sick', 'unpaid'
-          type: string
-      response_description: Returns the number of available leave days for the specified
-        leave type as an integer.
-      response_type: int
-      tool_type: query
-    - tool_name: validate_leave_type
-      tool_description: Checks if the requested leave type is valid and available
-        for the employee.
-      input_parameters:
-        employee_id:
-          description: The unique identifier of the employee.
-          type: string
-        leave_type:
-          description: The type of leave to check. Must be one of the following leave types - 'vacation', 'sick', 'unpaid'
-          type: string
-      response_description: Returns a boolean indicating if the leave type is valid
-        for the employee.
-      response_type: bool
-      tool_type: query
-    - tool_name: check_pending_leaves
-      tool_description: Identifies any pending or upcoming leave requests for the
-        employee that may affect their available balance.
-      input_parameters:
-        employee_id:
-          description: The unique identifier of the employee.
-          type: string
-      response_description: Returns a list of pending leave requests, each with leave
-        type, start date, end date, and status.
-      response_type: 'list[dict] (e.g., [{ ''leave_type'': str, ''start_date'': str,
-        ''end_date'': str, ''status'': str }])'
-      tool_type: query
+      - tool_name: fetch_leave_balance
+        tool_description:
+          Retrieves the current leave balance for a specified employee
+          and leave type from the HR system.
+        input_parameters:
+          employee_id:
+            description: The unique identifier of the employee.
+            type: string
+          leave_type:
+            description: The type of leave to check. Must be one of the following leave types - 'vacation', 'sick', 'unpaid'
+            type: string
+        response_description:
+          Returns the number of available leave days for the specified
+          leave type as an integer.
+        response_type: int
+        tool_type: query
+      - tool_name: validate_leave_type
+        tool_description:
+          Checks if the requested leave type is valid and available
+          for the employee.
+        input_parameters:
+          employee_id:
+            description: The unique identifier of the employee.
+            type: string
+          leave_type:
+            description: The type of leave to check. Must be one of the following leave types - 'vacation', 'sick', 'unpaid'
+            type: string
+        response_description:
+          Returns a boolean indicating if the leave type is valid
+          for the employee.
+        response_type: bool
+        tool_type: query
+      - tool_name: check_pending_leaves
+        tool_description:
+          Identifies any pending or upcoming leave requests for the
+          employee that may affect their available balance.
+        input_parameters:
+          employee_id:
+            description: The unique identifier of the employee.
+            type: string
+        response_description:
+          Returns a list of pending leave requests, each with leave
+          type, start date, end date, and status.
+        response_type:
+          "list[dict] (e.g., [{ 'leave_type': str, 'start_date': str,
+          'end_date': str, 'status': str }])"
+        tool_type: query
   leave_approval_agent:
     agent_profile: |
       Manages the approval process for leave requests, including conflict detection and notifications.
@@ -88,81 +96,89 @@ agents:
       - user_information_retriever_agent
       - balance_checking_agent
     tools:
-    - tool_name: detect_leave_conflicts
-      tool_description: Checks for scheduling conflicts or overlapping leaves within
-        the employee's team for the requested leave period. Only use this tool once you have checked that the employee is eligible to request the leave.
-      input_parameters:
-        employee_id:
-          description: The unique identifier of the employee.
-          type: string
-        start_date:
-          description: The start date of the requested leave in the following format (YYYY-MM-DD).
-          type: string
-        end_date:
-          description: The end date of the requested leave in the following format (YYYY-MM-DD).
-          type: string
-      response_description: Returns a list of conflicts, each with the conflicting
-        employee's name, leave dates, and role. Returns an empty list if no conflicts
-        are found.
-      response_type: 'list[dict] (e.g., [{ ''employee_name'': str, ''start_date'':
-        str, ''end_date'': str, ''role'': str }])'
-      tool_type: query
+      - tool_name: detect_leave_conflicts
+        tool_description:
+          Checks for scheduling conflicts or overlapping leaves within
+          the employee's team for the requested leave period. Only use this tool once you have checked that the employee is eligible to request the leave.
+        input_parameters:
+          employee_id:
+            description: The unique identifier of the employee.
+            type: string
+          start_date:
+            description: The start date of the requested leave in the following format (YYYY-MM-DD).
+            type: string
+          end_date:
+            description: The end date of the requested leave in the following format (YYYY-MM-DD).
+            type: string
+        response_description:
+          Returns a list of conflicts, each with the conflicting
+          employee's name, leave dates, and role. Returns an empty list if no conflicts
+          are found.
+        response_type: "list[dict] (e.g., [{ 'employee_name': str, 'start_date':
+          str, 'end_date': str, 'role': str }])"
+        tool_type: query
 
-    - tool_name: route_for_approval
-      tool_description: Routes the leave request to the appropriate manager or HR
-        personnel for approval and returns the approval decision. Only use this tool once you have checked that the employee is eligible to request the leave.
-      input_parameters:
-        employee_id:
-          description: The unique identifier of the employee.
-          type: string
-        leave_type:
-          description: The type of leave requested.
-          type: string
-        start_date:
-          description: The start date of the requested leave in the following format (YYYY-MM-DD).
-          type: string
-        end_date:
-          description: The end date of the requested leave in the following format (YYYY-MM-DD).
-          type: string
-      response_description: Returns the approval decision as a string ('approved'
-        or 'rejected') and an optional comment.
-      response_type: 'dict (e.g., { ''decision'': str, ''comment'': str })'
-      tool_type: modify
-    - tool_name: update_leave_record
-      tool_description: Updates the HR system with the outcome of the leave request
-        (approved or rejected). Only use this tool once you have checked that the employee is eligible to request the leave.
-      input_parameters:
-        employee_id:
-          description: The unique identifier of the employee.
-          type: string
-        leave_type:
-          description: The type of leave requested.
-          type: string
-        start_date:
-          description: The start date of the leave in the following format (YYYY-MM-DD).
-          type: string
-        end_date:
-          description: The end date of the leave in the following format (YYYY-MM-DD).
-          type: string
-        status:
-          description: The final status of the leave request ('approved' or 'rejected').
-          type: string
-      response_description: Returns a confirmation message indicating the record was
-        updated successfully.
-      response_type: string
-      tool_type: modify
+      - tool_name: route_for_approval
+        tool_description:
+          Routes the leave request to the appropriate manager or HR
+          personnel for approval and returns the approval decision. Only use this tool once you have checked that the employee is eligible to request the leave.
+        input_parameters:
+          employee_id:
+            description: The unique identifier of the employee.
+            type: string
+          leave_type:
+            description: The type of leave requested.
+            type: string
+          start_date:
+            description: The start date of the requested leave in the following format (YYYY-MM-DD).
+            type: string
+          end_date:
+            description: The end date of the requested leave in the following format (YYYY-MM-DD).
+            type: string
+        response_description:
+          Returns the approval decision as a string ('approved'
+          or 'rejected') and an optional comment.
+        response_type: "dict (e.g., { 'decision': str, 'comment': str })"
+        tool_type: modify
+      - tool_name: update_leave_record
+        tool_description:
+          Updates the HR system with the outcome of the leave request
+          (approved or rejected). Only use this tool once you have checked that the employee is eligible to request the leave.
+        input_parameters:
+          employee_id:
+            description: The unique identifier of the employee.
+            type: string
+          leave_type:
+            description: The type of leave requested.
+            type: string
+          start_date:
+            description: The start date of the leave in the following format (YYYY-MM-DD).
+            type: string
+          end_date:
+            description: The end date of the leave in the following format (YYYY-MM-DD).
+            type: string
+          status:
+            description: The final status of the leave request ('approved' or 'rejected').
+            type: string
+        response_description:
+          Returns a confirmation message indicating the record was
+          updated successfully.
+        response_type: string
+        tool_type: modify
 
-    - tool_name: notify_employee
-      tool_description: Sends a notification to the employee regarding the status
-        of their leave request. Only use this tool once you have checked that the employee is eligible to request the leave and all other steps have been completed.
-      input_parameters:
-        employee_id:
-          description: The unique identifier of the employee.
-          type: string
-      response_description: Returns a boolean indicating whether the notification
-        was sent successfully.
-      response_type: bool
-      tool_type: modify
+      - tool_name: notify_employee
+        tool_description:
+          Sends a notification to the employee regarding the status
+          of their leave request. Only use this tool once you have checked that the employee is eligible to request the leave and all other steps have been completed.
+        input_parameters:
+          employee_id:
+            description: The unique identifier of the employee.
+            type: string
+        response_description:
+          Returns a boolean indicating whether the notification
+          was sent successfully.
+        response_type: bool
+        tool_type: modify
 
 utterances_and_ground_truths:
   - id: "1"

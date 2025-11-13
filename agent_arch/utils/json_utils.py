@@ -77,7 +77,9 @@ def dump_json_file(filepath: str, data, ensure_ascii=False, indent=4, sort_keys=
         **kwargs: Additional arguments to pass to `json.dump()`.
     """
     with open(filepath, "w") as f:
-        json.dump(data, f, ensure_ascii=ensure_ascii, indent=indent, sort_keys=sort_keys)
+        json.dump(
+            data, f, ensure_ascii=ensure_ascii, indent=indent, sort_keys=sort_keys
+        )
         f.write("\n")
 
 
@@ -116,7 +118,7 @@ def load_jsonl_file(filepath: str, nrows: int | None = None) -> list[dict | list
 
 
 def extract_and_load_json_iter(
-        text: str, *, start: int = 0, strict: bool = False
+    text: str, *, start: int = 0, strict: bool = False
 ) -> Generator[tuple[dict | list | None, str], None, None]:
     """Method to extract JSON objects and arrays from text, even if there is text around.
 
@@ -145,7 +147,10 @@ def extract_and_load_json_iter(
 
 
 def extract_and_load_json(
-        text: str, ignore_backslashes: bool = True, strict: bool = False, return_all: bool | None = None
+    text: str,
+    ignore_backslashes: bool = True,
+    strict: bool = False,
+    return_all: bool | None = None,
 ) -> dict | list | None:
     """Method to extract and load JSON from text.
 
@@ -168,12 +173,20 @@ def extract_and_load_json(
         text = _fix_backslashes(text)
 
     if return_all:
-        json_objects = [json_object for json_object, _ in extract_and_load_json_iter(text, strict=strict)]
+        json_objects = [
+            json_object
+            for json_object, _ in extract_and_load_json_iter(text, strict=strict)
+        ]
         if not json_objects:
             if ignore_backslashes:
                 text = _fix_json_unescaped_double_quotes(text)
                 text = _fix_json_unescaped_backslashes(text)
-                json_objects = [json_object for json_object, _ in extract_and_load_json_iter(text, strict=strict)]
+                json_objects = [
+                    json_object
+                    for json_object, _ in extract_and_load_json_iter(
+                        text, strict=strict
+                    )
+                ]
         return json_objects
 
     json_object, _ = next(extract_and_load_json_iter(text, strict=strict), (None, ""))
@@ -181,7 +194,9 @@ def extract_and_load_json(
         if ignore_backslashes:
             text = _fix_json_unescaped_double_quotes(text)
             text = _fix_json_unescaped_backslashes(text)
-            json_object, _ = next(extract_and_load_json_iter(text, strict=strict), (None, ""))
+            json_object, _ = next(
+                extract_and_load_json_iter(text, strict=strict), (None, "")
+            )
     return json_object
 
 
@@ -240,7 +255,11 @@ def is_valid_json(s: str) -> bool:
 
 
 def is_minified(
-        s: str, *, allow_spaces_in_separators: bool = False, allow_newlines: bool = False, strict: bool = False
+    s: str,
+    *,
+    allow_spaces_in_separators: bool = False,
+    allow_newlines: bool = False,
+    strict: bool = False,
 ) -> bool:
     """Check if a string is minified JSON, i.e. the smallest possible JSON string.
 
@@ -260,8 +279,16 @@ def is_minified(
     separators = (",\0", ":\0") if allow_spaces_in_separators else (",", ":")
     indent = "" if allow_newlines else None
 
-    minified = json.dumps(json.loads(s, strict=strict), ensure_ascii=False, indent=indent, separators=separators)
-    return re.fullmatch(re.escape(minified).replace("\0", " ?").replace("\n", "\n?"), s) is not None
+    minified = json.dumps(
+        json.loads(s, strict=strict),
+        ensure_ascii=False,
+        indent=indent,
+        separators=separators,
+    )
+    return (
+        re.fullmatch(re.escape(minified).replace("\0", " ?").replace("\n", "\n?"), s)
+        is not None
+    )
 
 
 def is_pretty_printed(s: str) -> bool:

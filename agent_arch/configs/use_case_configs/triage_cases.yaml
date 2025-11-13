@@ -3,34 +3,34 @@ filename: triage_cases
 use_case_description: This workflow acts as an intelligent first line of customer service, handling simple requests automatically while ensuring complex or sensitive issues get proper human attention.
 use_case_instructions: |
   You are tasked with routing and handling customer service requests.
-  
+
   Follow the high level instructions below in order to complete your task. You must follow the steps in the order specified.
-    
+
   Step 1. Customer request validation
   - Validate the customers request and extracts context from the request. If the request is not valid, then finish execution.
-  
+
   Step 2. Duplicate Record Detection
   - Detect if the record is a duplicate.
   - If the record is not a duplicate, then continue. Otherwise link the source record with the duplicate case and finish execution.
-  
+
   Step 3. Negative Sentiment Routing and Processing
   - Consider the extracted sentiment of the customer request.
   - If the sentiment is negative, then create a case and skip steps 4 and 5.
   - If the sentiment is not negative, then continue to step 4.
-  
+
   Step 4. Process Informational Intents
   - Retrieve and process any informational intents.
-  
+
   Step 5. Process Transactional Intents
   - Retrieve and process any transactional intents.
-  
+
   Step 6. Process Complex Issue Intents by Creating Cases
   - Retrieve any existing complex issue intents. If a complex issue intent is found and the record table is interaction, then process them by creating a case.
-  
+
   Step 7. Email Response
-  - Generate and send an email response so that the customer is updated on the situation with their request. 
+  - Generate and send an email response so that the customer is updated on the situation with their request.
   - This is the only way for the customer to gain information on what is happening with their request.
-    
+
   You must keep selecting tools until all of these steps are completed.
   Before ending execution, you MUST respond with one of the following options: "Case created" if a new case was created or "No new case created" if no case was created.
 
@@ -52,7 +52,7 @@ agents:
       Then check if the customer's request/issue can be verified using existing information. If issue cannot be verified, do not proceed.
       If the customer's request/issue can be verified, then check if the case has already been escalated. If the case has already been escalated, do not proceed.
       Next, log the customer's request.
-      After that, extract the intents and sentiments from the customer's request. If intents and sentiments were extracted, then update the logged request with that information. 
+      After that, extract the intents and sentiments from the customer's request. If intents and sentiments were extracted, then update the logged request with that information.
       RECALL you must use TOOLS to complete each of these steps.
 
     tools:
@@ -108,25 +108,25 @@ agents:
                 confidence:
                   type: number
                   description: Confidence score for the intent
-              required: [ intent, intent_type, confidence ]
+              required: [intent, intent_type, confidence]
               additionalProperties: false
           sentiment:
-              description: Sentiment analysis result
-              type: object
-              properties:
-                sentiment:
+            description: Sentiment analysis result
+            type: object
+            properties:
+              sentiment:
+                type: string
+                description: Overall sentiment, e.g. positive, negative
+              confidence:
+                type: number
+                description: Confidence score for sentiment
+              emotions:
+                type: array
+                description: List of detected emotions
+                items:
                   type: string
-                  description: Overall sentiment, e.g. positive, negative
-                confidence:
-                  type: number
-                  description: Confidence score for sentiment
-                emotions:
-                  type: array
-                  description: List of detected emotions
-                  items:
-                    type: string
-              required: [ sentiment, confidence, emotions ]
-              additionalProperties: false
+            required: [sentiment, confidence, emotions]
+            additionalProperties: false
         response_type: boolean
         response_description: Returns True if the customer request was successfully updated else False
         tool_type: modify
@@ -143,7 +143,6 @@ agents:
         response_type: dict
         response_description: Returns dict with source table and id of logged request
         tool_type: modify
-
 
   duplicate_detection_agent:
     agent_profile: |
@@ -180,42 +179,41 @@ agents:
         response_description: Returns True if the source record is successfully deactivated and linked with the duplicate case else False
         tool_type: modify
 
-
   case_creation_agent:
     agent_profile: |
-      This agent creates a new case from a valid record by determining the case type, extracting required entities, verifying documents, and optionally generating resolution steps from knowledge articles. 
+      This agent creates a new case from a valid record by determining the case type, extracting required entities, verifying documents, and optionally generating resolution steps from knowledge articles.
       If successful, it links the case to the interaction and logs a detailed summary in work notes.
     access:
       - request_validation_agent
     agent_instructions: |
-      Strictly follow this progression of steps and execute each step in order to complete the task. 
-      
+      Strictly follow this progression of steps and execute each step in order to complete the task.
+
       Step 1. Identify case type from the record details
-      
+
       Step 2. Extract entities
       - Extract entities only from the content.
-      
+
       Step 3. Verify documents
       - Verify the documents.
-      
+
       Step 4. Create case
-      - Create a new case record, using the identified slot-filled fields as the target record fields.      
-      
+      - Create a new case record, using the identified slot-filled fields as the target record fields.
+
       Step 5. Recommend resolution steps
       - Execute this step ONLY IF the case was successfully created. If no case was created, skip this step and proceed to Step 7 (summarization).
       - Use the short description of the case as the search query to retrieve a list of relevant knowledge articles, including their full article body.
       - If no relevant knowledge articles are found or if the available resources are insufficient, skip this step and proceed to Step 7.
-      - If relevant knowledge articles are found, generate the recommended resolution steps based on the articles. Format the steps as a numbered list, ensuring the response contains only accurate and verifiable information. Do not fabricate or infer details. 
+      - If relevant knowledge articles are found, generate the recommended resolution steps based on the articles. Format the steps as a numbered list, ensuring the response contains only accurate and verifiable information. Do not fabricate or infer details.
       - If the resolution steps are successfully generated, add them to the case.
-      
+
       Step 6. Finalize interaction
       - Execute this step ONLY IF the case was successfully created. If no case was created, skip this step and proceed to Step 7 (summarization).
       - Link the interaction to the case.
       - Close the interaction.
-      
+
       Step 7. Generate complex issue summary
-      - Create a summary of all the completed steps in a numbered list format, including the result of entity extraction, document verification, case creation, and recommended resolution steps. 
-      
+      - Create a summary of all the completed steps in a numbered list format, including the result of entity extraction, document verification, case creation, and recommended resolution steps.
+
       Step 8. Update work notes
       - If no case was created, skip this step and finish execution.
       - Otherwise, update the work notes of the case, and use the generated complex issue agent summary as the work notes content.
@@ -355,30 +353,29 @@ agents:
         skip_automatic_tool_registration: true
         tool_type: modify
 
-
   informational_queries_agent:
     agent_profile: |
       This agent processes informational intents by enriching them with contextual record data, retrieving relevant knowledge articles, and saving a structured summary.
     agent_instructions: |
       The goal is to retrieve information in response to a set of queries by combining retrieval and question answering (QnA). The process involves first transforming each query into a more contextually rich version, then using it to retrieve relevant knowledge articles to generate an appropriate answer. This process is repeated for each informational query.
-      
-      This procedure needs to be followed specifically ONLY for Informational queries. 
+
+      This procedure needs to be followed specifically ONLY for Informational queries.
       If a particular query is marked as 'Transactional' or 'Complex Issues' intent, we do NOT need a retrieval and QnA for it.
       Ensure you have been given a list of informational intents to process, if there are no intents to process, finish execution.
-      
+
       Process each intent by executing Step 1 and Step 2 before moving on to the next intent:
-      
+
       Step 2. Gather missing context
       - Extract the informational query from the intent. In the query, add the record number and fill in any record context with the known record details.
       - Use the updated informational query to get the missing context.
       - If missing context is found, add to the gathered missing context.
       - If no missing context is found, store the missing context as empty.
-      
+
       Step 3. Retrieve relevant articles
       - Construct the final search query by adding the gathered missing context from both the previous intents and the current intent to the informational query.
       - Use the final search query to retrieve a list of relevant knowledge articles, including their full article body.
       - If no relevant knowledge articles are found, or if the available resources are insufficient, store the relevant knowledge articles as empty.
-      
+
       After all informational intents are processed, save a summary of the results. The summary MUST include the titles of each relevant article that was retrieved for each informational intent that was processed.
 
     tools:
@@ -415,7 +412,6 @@ agents:
         response_description: A list of relevant knowledge articles based on the provided query
         tool_type: query
 
-
   transactional_query_responder_agent:
     agent_profile: |
       This agent updates allowed fields in a record.
@@ -425,16 +421,16 @@ agents:
       You are only allowed to update specific fields which are called "whitelisted_fields".
       If you are tasked with updating a field that is not within the "whitelisted_fields", DO NOT update that field.
       You will need entity extraction to determine the fields to update. If entity extraction returns no fields, STRICTLY assume that you are NOT updating any fields.
-      
+
       ALWAYS follow this exact progression of steps and execute each step regardless of the task. Do NOT skip any steps. Use tools to do each steps.
-      
+
       Step 1. Entity extraction to determine which fields to update
       Step 2. If there are fields to update, then update them.
       Step 3. Save a summary of the updates. Your summary MUST include the name of every field you updated along with their values in the following JSON format:
       [
         {
           "field_name": "<field_name>",
-          "old_value": "<old_value>", 
+          "old_value": "<old_value>",
           "new_value": "<new_value>"
         }...
       ]
@@ -461,12 +457,11 @@ agents:
                 target_value:
                   type: string
                   description: The value to assign to the field
-              required: [ target_field, target_value ]
+              required: [target_field, target_value]
               additionalProperties: false
         response_type: object
         response_description: Confirmation that the record was successfully updated
         tool_type: modify
-
 
       - tool_name: save_transactional_agent_summary
         tool_description: Generate and save the Transactional Agent Summary.
@@ -514,10 +509,10 @@ agents:
 
   entity_extraction_agent:
     agent_profile: |
-      This agent extracts structured entities from a source record, including optionally running document extraction if task metadata is present. 
+      This agent extracts structured entities from a source record, including optionally running document extraction if task metadata is present.
       It merges field values from documents and the base record into a final JSON payload for downstream processing.
     agent_instructions: |
-      ALWAYS follow this progression of steps and execute each step to complete the task. 
+      ALWAYS follow this progression of steps and execute each step to complete the task.
       First retrieve entities, then get whitelisted fields, then get fields to update.
       If the metadata indicates that there are documents present, do document extraction to get document extracted fields.
       Finally, merge any document extracted fields with fields to update into one JSON object.
@@ -564,12 +559,11 @@ agents:
                 entity_value:
                   type: string
                   description: The value of the extracted entity (e.g., "ACC123456")
-              required: [ entity_name, entity_value ]
+              required: [entity_name, entity_value]
               additionalProperties: false
         response_type: list
         response_description: A list of fields to update, with each field represented as a JSON object string
         tool_type: query
-
 
       - tool_name: get_whitelisted_fields_and_task_definition
         tool_description: Returns the object of all fields that are specified by the customer. Response is exact JSON Object named <whitelisted_fields>. DO NOT modify the output and do not convert it to natural language.
@@ -581,15 +575,13 @@ agents:
         response_description: List of whitelisted fields with their descriptions
         tool_type: query
 
-
-
   document_verification_agent:
     agent_profile: |
-      This agent verifies whether all required documents for a case are present and valid by initiating and checking document verification flows. 
+      This agent verifies whether all required documents for a case are present and valid by initiating and checking document verification flows.
       It then generates a status report highlighting any missing documents or confirming successful validation.
     agent_instructions: |
-      ALWAYS follow this progression of steps and execute each step to complete the task. 
-      
+      ALWAYS follow this progression of steps and execute each step to complete the task.
+
       Step 1. Get required documents for the given case type
 
       Step 2.  Document verification
@@ -597,9 +589,9 @@ agents:
       - If the response is "No attachments found on the record for verification.", assume the documents are not all valid, add the documents list to the missing documents and skip to step 4.
 
       Step 3. Compare the values in valid documents and documents list.
-      - If all the items in the documents list are present in valid documents, then all documents are valid. 
+      - If all the items in the documents list are present in valid documents, then all documents are valid.
       - Otherwise, not all documents are valid and the missing documents includes the list of missing values (i.e. values present in documents list but not in valid documents).
-      
+
       Step 4. Generate the status report.
 
     tools:
@@ -646,7 +638,7 @@ agents:
 
   email_agent:
     agent_profile: |
-      This agent creates and sends an email response based on user-written reply content and case context, ensuring a clear and complete message is sent. 
+      This agent creates and sends an email response based on user-written reply content and case context, ensuring a clear and complete message is sent.
     agent_instructions: |
     tools:
       - tool_name: draft_email
@@ -678,12 +670,11 @@ agents:
         response_description: Confirmation that the draft email has been sent successfully
         tool_type: modify
 
-
 utterances_and_ground_truths:
   - id: "1"
     user_utterance: |
-      My account was charged twice for the same service last month and when I called customer service, they hung up on me. 
-      This is completely unacceptable and I want this resolved immediately. 
+      My account was charged twice for the same service last month and when I called customer service, they hung up on me.
+      This is completely unacceptable and I want this resolved immediately.
       My name is John Doe and my account number is ACC123456.
       The duplicate charges are for $95.89 each on March 15th 2025.
     ground_truth:
@@ -704,7 +695,7 @@ utterances_and_ground_truths:
           customer_id: "CUST00475208435745"
   - id: "2"
     user_utterance: |
-      I noticed I was billed twice for my subscription on April 10th, 2025. 
+      I noticed I was billed twice for my subscription on April 10th, 2025.
       There are two identical charges of $129.99 on my statement and I only signed up once.
       My name is Maria Rodriguez and my account is ACCT445566.
       Please fix this duplicate billing issue right away.
@@ -1025,8 +1016,8 @@ utterances_and_ground_truths:
           customer_id: "CUST008741259637418529637"
   - id: "16"
     user_utterance: |
-      My account was charged twice for the same service last month and when I called customer service, they hung up on me. 
-      This is completely unacceptable and I want this resolved immediately. 
+      My account was charged twice for the same service last month and when I called customer service, they hung up on me.
+      This is completely unacceptable and I want this resolved immediately.
       My name is John Doe and my account number is ACC123456.
       The duplicate charges are for $95.89 each on March 15th 2025.
     ground_truth:
@@ -1079,8 +1070,8 @@ utterances_and_ground_truths:
         log_customer_request:
           customer_id: "CUST00475208435745"
           request: |
-            My account was charged twice for the same service last month and when I called customer service, they hung up on me. 
-            This is completely unacceptable and I want this resolved immediately. 
+            My account was charged twice for the same service last month and when I called customer service, they hung up on me.
+            This is completely unacceptable and I want this resolved immediately.
             My name is John Doe and my account number is ACC123456.
             The duplicate charges are for $95.89 each on March 15th 2025.
         update_customer_request_with_sentiment_and_intents:
@@ -1090,15 +1081,15 @@ utterances_and_ground_truths:
             {
               "sentiment": "negative",
               "confidence": 0.98,
-              "emotions": [ "anger", "frustration" ]
+              "emotions": ["anger", "frustration"],
             }
           intents:
             [
               {
                 "intent": "billing_dispute",
                 "intent_type": "Complex Issue",
-                "confidence": 0.95
-              }
+                "confidence": 0.95,
+              },
             ]
         get_entities:
           source_id: INT001243634745
@@ -1107,41 +1098,25 @@ utterances_and_ground_truths:
           case_type: "customer_support"
         get_fields_to_update:
           source_id: INT001243634745
-          extracted_entities:  [
-            {
-              "entity_name": "account_number",
-              "entity_value": "ACC123456"
-            },
-            {
-              "entity_name": "charge_amount",
-              "entity_value": "95.89"
-            },
-            {
-              "entity_name": "charge_date",
-              "entity_value": "2025-03-15"
-            }
-          ]
+          extracted_entities:
+            [
+              { "entity_name": "account_number", "entity_value": "ACC123456" },
+              { "entity_name": "charge_amount", "entity_value": "95.89" },
+              { "entity_name": "charge_date", "entity_value": "2025-03-15" },
+            ]
         documents_checklist:
           case_type: "customer_support"
         verify_the_documents:
           record_id: INT001243634745
         status_report:
-          missing_documents:
-            []
-          verified_documents:
-            ["DOC3245243",
-             "DOC3245283",
-             "DOC3245293"]
+          missing_documents: []
+          verified_documents: ["DOC3245243", "DOC3245283", "DOC3245293"]
           all_documents_verified: true
         create_case:
           case_type: "customer_support"
           assigned_to: "billing"
-          target_field_and_values: [
-            {
-              "target_field": "charge_amount",
-              "target_value": "95.89"
-            }
-          ]
+          target_field_and_values:
+            [{ "target_field": "charge_amount", "target_value": "95.89" }]
         add_resolution_steps:
           case_id: CASE0012345
         link_interaction_to_case:
@@ -1154,13 +1129,12 @@ utterances_and_ground_truths:
         draft_email:
           to: john_doe@gmail.com
         send_email:
-          draft_id:
-            DRAFT001
+          draft_id: DRAFT001
 
   - id: "17"
     user_utterance: |
-      I noticed my credit card was billed three times for my monthly subscription on April 3rd 2025. 
-      Each charge is $49.99 and I should only have been charged once. 
+      I noticed my credit card was billed three times for my monthly subscription on April 3rd 2025.
+      Each charge is $49.99 and I should only have been charged once.
       My account is under Sarah Harrison, account number ACC789012.
       Please fix this error as soon as possible.
     ground_truth:
@@ -1213,8 +1187,8 @@ utterances_and_ground_truths:
         log_customer_request:
           customer_id: "CUST00475208435746"
           request: |
-            I noticed my credit card was billed three times for my monthly subscription on April 3rd 2025. 
-            Each charge is $49.99 and I should only have been charged once. 
+            I noticed my credit card was billed three times for my monthly subscription on April 3rd 2025.
+            Each charge is $49.99 and I should only have been charged once.
             My account is under Sarah Harrison, account number ACC789012.
             Please fix this error as soon as possible.
         update_customer_request_with_sentiment_and_intents:
@@ -1224,15 +1198,15 @@ utterances_and_ground_truths:
             {
               "sentiment": "negative",
               "confidence": 0.92,
-              "emotions": [ "concern", "confusion" ]
+              "emotions": ["concern", "confusion"],
             }
           intents:
             [
               {
                 "intent": "billing_dispute",
                 "intent_type": "Complex Issue",
-                "confidence": 0.94
-              }
+                "confidence": 0.94,
+              },
             ]
         get_entities:
           source_id: INT001243634746
@@ -1241,41 +1215,25 @@ utterances_and_ground_truths:
           case_type: "customer_support"
         get_fields_to_update:
           source_id: INT001243634746
-          extracted_entities: [
-            {
-              "entity_name": "account_number",
-              "entity_value": "ACC789012"
-            },
-            {
-              "entity_name": "charge_amount",
-              "entity_value": "49.99"
-            },
-            {
-              "entity_name": "charge_date",
-              "entity_value": "2025-04-03"
-            }
-          ]
+          extracted_entities:
+            [
+              { "entity_name": "account_number", "entity_value": "ACC789012" },
+              { "entity_name": "charge_amount", "entity_value": "49.99" },
+              { "entity_name": "charge_date", "entity_value": "2025-04-03" },
+            ]
         documents_checklist:
           case_type: "customer_support"
         verify_the_documents:
           record_id: INT001243634746
         status_report:
-          missing_documents:
-            [ ]
-          verified_documents:
-            [ "DOC3245244",
-              "DOC3245284",
-              "DOC3245294" ]
+          missing_documents: []
+          verified_documents: ["DOC3245244", "DOC3245284", "DOC3245294"]
           all_documents_verified: true
         create_case:
           case_type: "customer_support"
           assigned_to: "billing"
-          target_field_and_values: [
-            {
-              "target_field": "charge_amount",
-              "target_value": "49.99"
-            }
-          ]
+          target_field_and_values:
+            [{ "target_field": "charge_amount", "target_value": "49.99" }]
         add_resolution_steps:
           case_id: CASE0012346
         link_interaction_to_case:
@@ -1288,13 +1246,12 @@ utterances_and_ground_truths:
         draft_email:
           to: sharrison@gmail.com
         send_email:
-          draft_id:
-            DRAFT002
+          draft_id: DRAFT002
   - id: "18"
     user_utterance: |
-      This is Michael Rodriguez with account ACC345678. 
-      I was double-charged for my premium service on February 28th 2025. 
-      Both charges are $129.95 and I only signed up for one subscription. 
+      This is Michael Rodriguez with account ACC345678.
+      I was double-charged for my premium service on February 28th 2025.
+      Both charges are $129.95 and I only signed up for one subscription.
       I've been trying to reach someone about this for weeks!
     ground_truth:
       orchestrator:
@@ -1346,9 +1303,9 @@ utterances_and_ground_truths:
         log_customer_request:
           customer_id: "CUST00475208435747"
           request: |
-            This is Michael Rodriguez with account ACC345678. 
-            I was double-charged for my premium service on February 28th 2025. 
-            Both charges are $129.95 and I only signed up for one subscription. 
+            This is Michael Rodriguez with account ACC345678.
+            I was double-charged for my premium service on February 28th 2025.
+            Both charges are $129.95 and I only signed up for one subscription.
             I've been trying to reach someone about this for weeks!
         update_customer_request_with_sentiment_and_intents:
           source_id: INT001243634747
@@ -1357,15 +1314,15 @@ utterances_and_ground_truths:
             {
               "sentiment": "negative",
               "confidence": 0.96,
-              "emotions": [ "frustration", "annoyance" ]
+              "emotions": ["frustration", "annoyance"],
             }
           intents:
             [
               {
                 "intent": "billing_dispute",
                 "intent_type": "Complex Issue",
-                "confidence": 0.97
-              }
+                "confidence": 0.97,
+              },
             ]
         get_entities:
           source_id: INT001243634747
@@ -1374,41 +1331,25 @@ utterances_and_ground_truths:
           case_type: "customer_support"
         get_fields_to_update:
           source_id: INT001243634747
-          extracted_entities: [
-            {
-              "entity_name": "account_number",
-              "entity_value": "ACC345678"
-            },
-            {
-              "entity_name": "charge_amount",
-              "entity_value": "129.95"
-            },
-            {
-              "entity_name": "charge_date",
-              "entity_value": "2025-02-28"
-            }
-          ]
+          extracted_entities:
+            [
+              { "entity_name": "account_number", "entity_value": "ACC345678" },
+              { "entity_name": "charge_amount", "entity_value": "129.95" },
+              { "entity_name": "charge_date", "entity_value": "2025-02-28" },
+            ]
         documents_checklist:
           case_type: "customer_support"
         verify_the_documents:
           record_id: INT001243634747
         status_report:
-          missing_documents:
-            [ ]
-          verified_documents:
-            [ "DOC3245245",
-              "DOC3245285",
-              "DOC3245295" ]
+          missing_documents: []
+          verified_documents: ["DOC3245245", "DOC3245285", "DOC3245295"]
           all_documents_verified: true
         create_case:
           case_type: "customer_support"
           assigned_to: "billing"
-          target_field_and_values: [
-            {
-              "target_field": "charge_amount",
-              "target_value": "129.95"
-            }
-          ]
+          target_field_and_values:
+            [{ "target_field": "charge_amount", "target_value": "129.95" }]
         add_resolution_steps:
           case_id: CASE0012347
         link_interaction_to_case:
@@ -1421,13 +1362,12 @@ utterances_and_ground_truths:
         draft_email:
           to: m.rodriguez@gmail.com
         send_email:
-          draft_id:
-            DRAFT003
+          draft_id: DRAFT003
 
   - id: "19"
     user_utterance: |
-      Hi, I'm Lisa Chen and my account number is ACC567890. 
-      I see duplicate charges on my statement for $78.50 each from March 22nd 2025. 
+      Hi, I'm Lisa Chen and my account number is ACC567890.
+      I see duplicate charges on my statement for $78.50 each from March 22nd 2025.
       I only made one purchase that day but was charged twice. I am extremely upset about this.
       Could you please help me get this sorted out?
     ground_truth:
@@ -1480,8 +1420,8 @@ utterances_and_ground_truths:
         log_customer_request:
           customer_id: "CUST00475208435748"
           request: |
-            Hi, I'm Lisa Chen and my account number is ACC567890. 
-            I see duplicate charges on my statement for $78.50 each from March 22nd 2025. 
+            Hi, I'm Lisa Chen and my account number is ACC567890.
+            I see duplicate charges on my statement for $78.50 each from March 22nd 2025.
             I only made one purchase that day but was charged twice. I am extremely upset about this.
             Could you please help me get this sorted out?
         update_customer_request_with_sentiment_and_intents:
@@ -1491,15 +1431,15 @@ utterances_and_ground_truths:
             {
               "sentiment": "negative",
               "confidence": 0.85,
-              "emotions": [ "upset" ]
+              "emotions": ["upset"],
             }
           intents:
             [
               {
                 "intent": "billing_dispute",
                 "intent_type": "Complex Issue",
-                "confidence": 0.93
-              }
+                "confidence": 0.93,
+              },
             ]
         get_entities:
           source_id: INT001243634748
@@ -1508,41 +1448,25 @@ utterances_and_ground_truths:
           case_type: "customer_support"
         get_fields_to_update:
           source_id: INT001243634748
-          extracted_entities: [
-            {
-              "entity_name": "account_number",
-              "entity_value": "ACC567890"
-            },
-            {
-              "entity_name": "charge_amount",
-              "entity_value": "78.50"
-            },
-            {
-              "entity_name": "charge_date",
-              "entity_value": "2025-03-22"
-            }
-          ]
+          extracted_entities:
+            [
+              { "entity_name": "account_number", "entity_value": "ACC567890" },
+              { "entity_name": "charge_amount", "entity_value": "78.50" },
+              { "entity_name": "charge_date", "entity_value": "2025-03-22" },
+            ]
         documents_checklist:
           case_type: "customer_support"
         verify_the_documents:
           record_id: INT001243634748
         status_report:
-          missing_documents:
-            [ ]
-          verified_documents:
-            [ "DOC3245246",
-              "DOC3245286",
-              "DOC3245296" ]
+          missing_documents: []
+          verified_documents: ["DOC3245246", "DOC3245286", "DOC3245296"]
           all_documents_verified: true
         create_case:
           case_type: "customer_support"
           assigned_to: "billing"
-          target_field_and_values: [
-            {
-              "target_field": "charge_amount",
-              "target_value": "78.50"
-            }
-          ]
+          target_field_and_values:
+            [{ "target_field": "charge_amount", "target_value": "78.50" }]
         add_resolution_steps:
           case_id: CASE0012348
         link_interaction_to_case:
@@ -1555,14 +1479,13 @@ utterances_and_ground_truths:
         draft_email:
           to: lisa.chen@yahoo.com
         send_email:
-          draft_id:
-            DRAFT004
+          draft_id: DRAFT004
 
   - id: "20"
     user_utterance: |
-      My name is David Thompson, account ACC901234. 
-      I've been charged four times for my annual membership fee on January 15th 2025. 
-      The amount is $199.00 per charge, totaling $796.00 instead of the correct $199.00. 
+      My name is David Thompson, account ACC901234.
+      I've been charged four times for my annual membership fee on January 15th 2025.
+      The amount is $199.00 per charge, totaling $796.00 instead of the correct $199.00.
       This is a significant overcharge and I need it corrected immediately.
     ground_truth:
       orchestrator:
@@ -1614,9 +1537,9 @@ utterances_and_ground_truths:
         log_customer_request:
           customer_id: "CUST00475208435749"
           request: |
-            My name is David Thompson, account ACC901234. 
-            I've been charged four times for my annual membership fee on January 15th 2025. 
-            The amount is $199.00 per charge, totaling $796.00 instead of the correct $199.00. 
+            My name is David Thompson, account ACC901234.
+            I've been charged four times for my annual membership fee on January 15th 2025.
+            The amount is $199.00 per charge, totaling $796.00 instead of the correct $199.00.
             This is a significant overcharge and I need it corrected immediately.
         update_customer_request_with_sentiment_and_intents:
           source_id: INT001243634749
@@ -1625,15 +1548,15 @@ utterances_and_ground_truths:
             {
               "sentiment": "negative",
               "confidence": 0.94,
-              "emotions": [ "urgency", "frustration" ]
+              "emotions": ["urgency", "frustration"],
             }
           intents:
             [
               {
                 "intent": "billing_dispute",
                 "intent_type": "Complex Issue",
-                "confidence": 0.98
-              }
+                "confidence": 0.98,
+              },
             ]
         get_entities:
           source_id: INT001243634749
@@ -1642,41 +1565,25 @@ utterances_and_ground_truths:
           case_type: "customer_support"
         get_fields_to_update:
           source_id: INT001243634749
-          extracted_entities: [
-            {
-              "entity_name": "account_number",
-              "entity_value": "ACC901234"
-            },
-            {
-              "entity_name": "charge_amount",
-              "entity_value": "199.00"
-            },
-            {
-              "entity_name": "charge_date",
-              "entity_value": "2025-01-15"
-            }
-          ]
+          extracted_entities:
+            [
+              { "entity_name": "account_number", "entity_value": "ACC901234" },
+              { "entity_name": "charge_amount", "entity_value": "199.00" },
+              { "entity_name": "charge_date", "entity_value": "2025-01-15" },
+            ]
         documents_checklist:
           case_type: "customer_support"
         verify_the_documents:
           record_id: INT001243634749
         status_report:
-          missing_documents:
-            [ ]
-          verified_documents:
-            [ "DOC3245247",
-              "DOC3245287",
-              "DOC3245297" ]
+          missing_documents: []
+          verified_documents: ["DOC3245247", "DOC3245287", "DOC3245297"]
           all_documents_verified: true
         create_case:
           case_type: "customer_support"
           assigned_to: "billing"
-          target_field_and_values: [
-            {
-              "target_field": "charge_amount",
-              "target_value": "199.00"
-            }
-          ]
+          target_field_and_values:
+            [{ "target_field": "charge_amount", "target_value": "199.00" }]
         add_resolution_steps:
           case_id: CASE0012349
         link_interaction_to_case:
@@ -1689,13 +1596,12 @@ utterances_and_ground_truths:
         draft_email:
           to: david.thompson@outlook.com
         send_email:
-          draft_id:
-            DRAFT005
+          draft_id: DRAFT005
 
   - id: "21"
     user_utterance: |
-      Hello, this is Amanda Wilson with account number ACC112233. 
-      I was charged twice for my order on April 8th 2025, with each charge being $67.25. 
+      Hello, this is Amanda Wilson with account number ACC112233.
+      I was charged twice for my order on April 8th 2025, with each charge being $67.25.
       I only placed one order and should not have been charged multiple times. This is unacceptable and im very frustrated.
       Please investigate this billing error and reverse the duplicate charge.
     ground_truth:
@@ -1748,8 +1654,8 @@ utterances_and_ground_truths:
         log_customer_request:
           customer_id: "CUST00475208435750"
           request: |
-            Hello, this is Amanda Wilson with account number ACC112233. 
-            I was charged twice for my order on April 8th 2025, with each charge being $67.25. 
+            Hello, this is Amanda Wilson with account number ACC112233.
+            I was charged twice for my order on April 8th 2025, with each charge being $67.25.
             I only placed one order and should not have been charged multiple times. This is unacceptable and im very frustrated.
             Please investigate this billing error and reverse the duplicate charge.
         update_customer_request_with_sentiment_and_intents:
@@ -1759,15 +1665,15 @@ utterances_and_ground_truths:
             {
               "sentiment": "negative",
               "confidence": 0.88,
-              "emotions": [ "frustration" ]
+              "emotions": ["frustration"],
             }
           intents:
             [
               {
                 "intent": "billing_dispute",
                 "intent_type": "Complex Issue",
-                "confidence": 0.95
-              }
+                "confidence": 0.95,
+              },
             ]
         get_entities:
           source_id: INT001243634750
@@ -1776,41 +1682,25 @@ utterances_and_ground_truths:
           case_type: "customer_support"
         get_fields_to_update:
           source_id: INT001243634750
-          extracted_entities: [
-            {
-              "entity_name": "account_number",
-              "entity_value": "ACC112233"
-            },
-            {
-              "entity_name": "charge_amount",
-              "entity_value": "67.25"
-            },
-            {
-              "entity_name": "charge_date",
-              "entity_value": "2025-04-08"
-            }
-          ]
+          extracted_entities:
+            [
+              { "entity_name": "account_number", "entity_value": "ACC112233" },
+              { "entity_name": "charge_amount", "entity_value": "67.25" },
+              { "entity_name": "charge_date", "entity_value": "2025-04-08" },
+            ]
         documents_checklist:
           case_type: "customer_support"
         verify_the_documents:
           record_id: INT001243634750
         status_report:
-          missing_documents:
-            [ ]
-          verified_documents:
-            [ "DOC3245248",
-              "DOC3245288",
-              "DOC3245298" ]
+          missing_documents: []
+          verified_documents: ["DOC3245248", "DOC3245288", "DOC3245298"]
           all_documents_verified: true
         create_case:
           case_type: "customer_support"
           assigned_to: "billing"
-          target_field_and_values: [
-            {
-              "target_field": "charge_amount",
-              "target_value": "67.25"
-            }
-          ]
+          target_field_and_values:
+            [{ "target_field": "charge_amount", "target_value": "67.25" }]
         add_resolution_steps:
           case_id: CASE0012350
         link_interaction_to_case:
@@ -1823,14 +1713,13 @@ utterances_and_ground_truths:
         draft_email:
           to: amanda.wilson@gmail.com
         send_email:
-          draft_id:
-            DRAFT006
+          draft_id: DRAFT006
 
   - id: "22"
     user_utterance: |
-      I'm Robert Garcia, account ACC445566, and I'm extremely upset about being charged twice for the same service. 
-      The duplicate charges of $156.75 each appeared on March 30th 2025. 
-      This has caused my account to overdraft and I'm furious about this billing mistake. 
+      I'm Robert Garcia, account ACC445566, and I'm extremely upset about being charged twice for the same service.
+      The duplicate charges of $156.75 each appeared on March 30th 2025.
+      This has caused my account to overdraft and I'm furious about this billing mistake.
       Fix this now!
     ground_truth:
       orchestrator:
@@ -1882,9 +1771,9 @@ utterances_and_ground_truths:
         log_customer_request:
           customer_id: "CUST00475208435751"
           request: |
-            I'm Robert Garcia, account ACC445566, and I'm extremely upset about being charged twice for the same service. 
-            The duplicate charges of $156.75 each appeared on March 30th 2025. 
-            This has caused my account to overdraft and I'm furious about this billing mistake. 
+            I'm Robert Garcia, account ACC445566, and I'm extremely upset about being charged twice for the same service.
+            The duplicate charges of $156.75 each appeared on March 30th 2025.
+            This has caused my account to overdraft and I'm furious about this billing mistake.
             Fix this now!
         update_customer_request_with_sentiment_and_intents:
           source_id: INT001243634751
@@ -1893,15 +1782,15 @@ utterances_and_ground_truths:
             {
               "sentiment": "negative",
               "confidence": 0.99,
-              "emotions": [ "anger", "fury", "frustration" ]
+              "emotions": ["anger", "fury", "frustration"],
             }
           intents:
             [
               {
                 "intent": "billing_dispute",
                 "intent_type": "Complex Issue",
-                "confidence": 0.97
-              }
+                "confidence": 0.97,
+              },
             ]
         get_entities:
           source_id: INT001243634751
@@ -1910,41 +1799,25 @@ utterances_and_ground_truths:
           case_type: "customer_support"
         get_fields_to_update:
           source_id: INT001243634751
-          extracted_entities: [
-            {
-              "entity_name": "account_number",
-              "entity_value": "ACC445566"
-            },
-            {
-              "entity_name": "charge_amount",
-              "entity_value": "156.75"
-            },
-            {
-              "entity_name": "charge_date",
-              "entity_value": "2025-03-30"
-            }
-          ]
+          extracted_entities:
+            [
+              { "entity_name": "account_number", "entity_value": "ACC445566" },
+              { "entity_name": "charge_amount", "entity_value": "156.75" },
+              { "entity_name": "charge_date", "entity_value": "2025-03-30" },
+            ]
         documents_checklist:
           case_type: "customer_support"
         verify_the_documents:
           record_id: INT001243634751
         status_report:
-          missing_documents:
-            [ ]
-          verified_documents:
-            [ "DOC3245249",
-              "DOC3245289",
-              "DOC3245299" ]
+          missing_documents: []
+          verified_documents: ["DOC3245249", "DOC3245289", "DOC3245299"]
           all_documents_verified: true
         create_case:
           case_type: "customer_support"
           assigned_to: "billing"
-          target_field_and_values: [
-            {
-              "target_field": "charge_amount",
-              "target_value": "156.75"
-            }
-          ]
+          target_field_and_values:
+            [{ "target_field": "charge_amount", "target_value": "156.75" }]
         add_resolution_steps:
           case_id: CASE0012351
         link_interaction_to_case:
@@ -1957,13 +1830,12 @@ utterances_and_ground_truths:
         draft_email:
           to: r.garcia@yahoo.com
         send_email:
-          draft_id:
-            DRAFT007
+          draft_id: DRAFT007
 
   - id: "23"
     user_utterance: |
-      This is Jennifer Brown calling about account ACC778899. 
-      I've discovered three identical charges of $89.40 each on February 14th 2025 for my Valentine's Day order. 
+      This is Jennifer Brown calling about account ACC778899.
+      I've discovered three identical charges of $89.40 each on February 14th 2025 for my Valentine's Day order.
       I only made one purchase but somehow got charged three times!!?? THIS IS UNACCEPTABLE I AM FURIOUS
       Can you please help me resolve this billing issue?
     ground_truth:
@@ -2016,8 +1888,8 @@ utterances_and_ground_truths:
         log_customer_request:
           customer_id: "CUST00475208435752"
           request: |
-            This is Jennifer Brown calling about account ACC778899. 
-            I've discovered three identical charges of $89.40 each on February 14th 2025 for my Valentine's Day order. 
+            This is Jennifer Brown calling about account ACC778899.
+            I've discovered three identical charges of $89.40 each on February 14th 2025 for my Valentine's Day order.
             I only made one purchase but somehow got charged three times!!?? THIS IS UNACCEPTABLE I AM FURIOUS
             Can you please help me resolve this billing issue?
         update_customer_request_with_sentiment_and_intents:
@@ -2027,15 +1899,15 @@ utterances_and_ground_truths:
             {
               "sentiment": "negative",
               "confidence": 0.99,
-              "emotions": [ "fury", "anger" ]
+              "emotions": ["fury", "anger"],
             }
           intents:
             [
               {
                 "intent": "billing_dispute",
                 "intent_type": "Complex Issue",
-                "confidence": 0.96
-              }
+                "confidence": 0.96,
+              },
             ]
         get_entities:
           source_id: INT001243634752
@@ -2044,41 +1916,25 @@ utterances_and_ground_truths:
           case_type: "customer_support"
         get_fields_to_update:
           source_id: INT001243634752
-          extracted_entities: [
-            {
-              "entity_name": "account_number",
-              "entity_value": "ACC778899"
-            },
-            {
-              "entity_name": "charge_amount",
-              "entity_value": "89.40"
-            },
-            {
-              "entity_name": "charge_date",
-              "entity_value": "2025-02-14"
-            }
-          ]
+          extracted_entities:
+            [
+              { "entity_name": "account_number", "entity_value": "ACC778899" },
+              { "entity_name": "charge_amount", "entity_value": "89.40" },
+              { "entity_name": "charge_date", "entity_value": "2025-02-14" },
+            ]
         documents_checklist:
           case_type: "customer_support"
         verify_the_documents:
           record_id: INT001243634752
         status_report:
-          missing_documents:
-            [ ]
-          verified_documents:
-            [ "DOC3245250",
-              "DOC3245290",
-              "DOC3245300" ]
+          missing_documents: []
+          verified_documents: ["DOC3245250", "DOC3245290", "DOC3245300"]
           all_documents_verified: true
         create_case:
           case_type: "customer_support"
           assigned_to: "billing"
-          target_field_and_values: [
-            {
-              "target_field": "charge_amount",
-              "target_value": "89.40"
-            }
-          ]
+          target_field_and_values:
+            [{ "target_field": "charge_amount", "target_value": "89.40" }]
         add_resolution_steps:
           case_id: CASE0012352
         link_interaction_to_case:
@@ -2091,14 +1947,13 @@ utterances_and_ground_truths:
         draft_email:
           to: jennifer.brown@hotmail.com
         send_email:
-          draft_id:
-            DRAFT008
+          draft_id: DRAFT008
 
   - id: "24"
     user_utterance: |
-      My name is Kevin Martinez and I have account ACC334455. 
-      I noticed duplicate billing for my quarterly payment on January 5th 2025. 
-      Both charges are for $245.00 and this has put me over my credit limit. 
+      My name is Kevin Martinez and I have account ACC334455.
+      I noticed duplicate billing for my quarterly payment on January 5th 2025.
+      Both charges are for $245.00 and this has put me over my credit limit.
       I need this duplicate charge removed as soon as possible.
     ground_truth:
       orchestrator:
@@ -2150,9 +2005,9 @@ utterances_and_ground_truths:
         log_customer_request:
           customer_id: "CUST00475208435753"
           request: |
-            My name is Kevin Martinez and I have account ACC334455. 
-            I noticed duplicate billing for my quarterly payment on January 5th 2025. 
-            Both charges are for $245.00 and this has put me over my credit limit. 
+            My name is Kevin Martinez and I have account ACC334455.
+            I noticed duplicate billing for my quarterly payment on January 5th 2025.
+            Both charges are for $245.00 and this has put me over my credit limit.
             I need this duplicate charge removed as soon as possible.
         update_customer_request_with_sentiment_and_intents:
           source_id: INT001243634753
@@ -2161,15 +2016,15 @@ utterances_and_ground_truths:
             {
               "sentiment": "negative",
               "confidence": 0.91,
-              "emotions": [ "concern", "urgency" ]
+              "emotions": ["concern", "urgency"],
             }
           intents:
             [
               {
                 "intent": "billing_dispute",
                 "intent_type": "Complex Issue",
-                "confidence": 0.94
-              }
+                "confidence": 0.94,
+              },
             ]
         get_entities:
           source_id: INT001243634753
@@ -2178,41 +2033,25 @@ utterances_and_ground_truths:
           case_type: "customer_support"
         get_fields_to_update:
           source_id: INT001243634753
-          extracted_entities: [
-            {
-              "entity_name": "account_number",
-              "entity_value": "ACC334455"
-            },
-            {
-              "entity_name": "charge_amount",
-              "entity_value": "245.00"
-            },
-            {
-              "entity_name": "charge_date",
-              "entity_value": "2025-01-05"
-            }
-          ]
+          extracted_entities:
+            [
+              { "entity_name": "account_number", "entity_value": "ACC334455" },
+              { "entity_name": "charge_amount", "entity_value": "245.00" },
+              { "entity_name": "charge_date", "entity_value": "2025-01-05" },
+            ]
         documents_checklist:
           case_type: "customer_support"
         verify_the_documents:
           record_id: INT001243634753
         status_report:
-          missing_documents:
-            [ ]
-          verified_documents:
-            [ "DOC3245251",
-              "DOC3245291",
-              "DOC3245301" ]
+          missing_documents: []
+          verified_documents: ["DOC3245251", "DOC3245291", "DOC3245301"]
           all_documents_verified: true
         create_case:
           case_type: "customer_support"
           assigned_to: "billing"
-          target_field_and_values: [
-            {
-              "target_field": "charge_amount",
-              "target_value": "245.00"
-            }
-          ]
+          target_field_and_values:
+            [{ "target_field": "charge_amount", "target_value": "245.00" }]
         add_resolution_steps:
           case_id: CASE0012353
         link_interaction_to_case:
@@ -2225,14 +2064,13 @@ utterances_and_ground_truths:
         draft_email:
           to: kevin.martinez@gmail.com
         send_email:
-          draft_id:
-            DRAFT009
+          draft_id: DRAFT009
 
   - id: "25"
     user_utterance: |
-      This is Patricia Davis with account ACC998877. 
-      I was charged twice for my software license renewal on April 12th 2025. 
-      Each charge is $112.30 and I only authorized one payment. 
+      This is Patricia Davis with account ACC998877.
+      I was charged twice for my software license renewal on April 12th 2025.
+      Each charge is $112.30 and I only authorized one payment.
       The extra charge has affected my monthly budget which is extremely frustrating so I demand a quick resolution.
     ground_truth:
       orchestrator:
@@ -2284,9 +2122,9 @@ utterances_and_ground_truths:
         log_customer_request:
           customer_id: "CUST00475208435754"
           request: |
-            This is Patricia Davis with account ACC998877. 
-            I was charged twice for my software license renewal on April 12th 2025. 
-            Each charge is $112.30 and I only authorized one payment. 
+            This is Patricia Davis with account ACC998877.
+            I was charged twice for my software license renewal on April 12th 2025.
+            Each charge is $112.30 and I only authorized one payment.
             The extra charge has affected my monthly budget which is extremely frustrating so I demand a quick resolution.
         update_customer_request_with_sentiment_and_intents:
           source_id: INT001243634754
@@ -2295,15 +2133,15 @@ utterances_and_ground_truths:
             {
               "sentiment": "negative",
               "confidence": 0.97,
-              "emotions": [ "frustration" ]
+              "emotions": ["frustration"],
             }
           intents:
             [
               {
                 "intent": "billing_dispute",
                 "intent_type": "Complex Issue",
-                "confidence": 0.93
-              }
+                "confidence": 0.93,
+              },
             ]
         get_entities:
           source_id: INT001243634754
@@ -2312,41 +2150,25 @@ utterances_and_ground_truths:
           case_type: "customer_support"
         get_fields_to_update:
           source_id: INT001243634754
-          extracted_entities: [
-            {
-              "entity_name": "account_number",
-              "entity_value": "ACC998877"
-            },
-            {
-              "entity_name": "charge_amount",
-              "entity_value": "112.30"
-            },
-            {
-              "entity_name": "charge_date",
-              "entity_value": "2025-04-12"
-            }
-          ]
+          extracted_entities:
+            [
+              { "entity_name": "account_number", "entity_value": "ACC998877" },
+              { "entity_name": "charge_amount", "entity_value": "112.30" },
+              { "entity_name": "charge_date", "entity_value": "2025-04-12" },
+            ]
         documents_checklist:
           case_type: "customer_support"
         verify_the_documents:
           record_id: INT001243634754
         status_report:
-          missing_documents:
-            [ ]
-          verified_documents:
-            [ "DOC3245252",
-              "DOC3245292",
-              "DOC3245302" ]
+          missing_documents: []
+          verified_documents: ["DOC3245252", "DOC3245292", "DOC3245302"]
           all_documents_verified: true
         create_case:
           case_type: "customer_support"
           assigned_to: "billing"
-          target_field_and_values: [
-            {
-              "target_field": "charge_amount",
-              "target_value": "112.30"
-            }
-          ]
+          target_field_and_values:
+            [{ "target_field": "charge_amount", "target_value": "112.30" }]
         add_resolution_steps:
           case_id: CASE0012354
         link_interaction_to_case:
@@ -2359,15 +2181,14 @@ utterances_and_ground_truths:
         draft_email:
           to: patricia.davis@outlook.com
         send_email:
-          draft_id:
-            DRAFT010
+          draft_id: DRAFT010
   - id: "26"
     user_utterance: |
-      This is Holly Zhang with account ACC998877. 
+      This is Holly Zhang with account ACC998877.
       I am having an issue.
-      I was charged twice for my software license renewal on March 31st 2023. 
+      I was charged twice for my software license renewal on March 31st 2023.
       Can you help me with this? I really need to resolve this.
-      Each charge is $114.30 and I only authorized one payment. 
+      Each charge is $114.30 and I only authorized one payment.
       The extra charge has affected my monthly budget which is extremely frustrating so I demand a quick resolution.
     ground_truth:
       orchestrator:
@@ -2419,7 +2240,7 @@ utterances_and_ground_truths:
         log_customer_request:
           customer_id: "CUST00475208435754"
           request: |
-            This is Holly Zhang with account ACC998877. 
+            This is Holly Zhang with account ACC998877.
             I am having an issue.
             I was charged twice for my software license renewal on March 31st 2025.
             Can you help me with this? I really need to resolve this.
@@ -2432,15 +2253,15 @@ utterances_and_ground_truths:
             {
               "sentiment": "negative",
               "confidence": 0.97,
-              "emotions": [ "frustration" ]
+              "emotions": ["frustration"],
             }
           intents:
             [
               {
                 "intent": "billing_dispute",
                 "intent_type": "Complex Issue",
-                "confidence": 0.93
-              }
+                "confidence": 0.93,
+              },
             ]
         get_entities:
           source_id: INT001243634754
@@ -2449,41 +2270,25 @@ utterances_and_ground_truths:
           case_type: "customer_support"
         get_fields_to_update:
           source_id: INT001243634754
-          extracted_entities: [
-            {
-              "entity_name": "account_number",
-              "entity_value": "ACC998877"
-            },
-            {
-              "entity_name": "charge_amount",
-              "entity_value": "112.30"
-            },
-            {
-              "entity_name": "charge_date",
-              "entity_value": "2025-04-12"
-            }
-          ]
+          extracted_entities:
+            [
+              { "entity_name": "account_number", "entity_value": "ACC998877" },
+              { "entity_name": "charge_amount", "entity_value": "112.30" },
+              { "entity_name": "charge_date", "entity_value": "2025-04-12" },
+            ]
         documents_checklist:
           case_type: "customer_support"
         verify_the_documents:
           record_id: INT001243634754
         status_report:
-          missing_documents:
-            [ ]
-          verified_documents:
-            [ "DOC3245252",
-              "DOC3245292",
-              "DOC3245302" ]
+          missing_documents: []
+          verified_documents: ["DOC3245252", "DOC3245292", "DOC3245302"]
           all_documents_verified: true
         create_case:
           case_type: "customer_support"
           assigned_to: "billing"
-          target_field_and_values: [
-            {
-              "target_field": "charge_amount",
-              "target_value": "112.30"
-            }
-          ]
+          target_field_and_values:
+            [{ "target_field": "charge_amount", "target_value": "112.30" }]
         add_resolution_steps:
           case_id: CASE0012354
         link_interaction_to_case:
@@ -2496,15 +2301,14 @@ utterances_and_ground_truths:
         draft_email:
           to: Holly.Zhang@outlook.com
         send_email:
-          draft_id:
-            DRAFT010
+          draft_id: DRAFT010
   - id: "27"
     user_utterance: |
-      This is Aliciaze Stephanopolous with account ACC998877235429238345235429238345. 
+      This is Aliciaze Stephanopolous with account ACC998877235429238345235429238345.
       I am having an issue.
-      I was charged twice for my software license renewal on April 12th 2025. 
+      I was charged twice for my software license renewal on April 12th 2025.
       Can you help me with this? I really need to resolve this.
-      Each charge is $87.34 and I only authorized one payment. 
+      Each charge is $87.34 and I only authorized one payment.
       The extra charge has affected my monthly budget which is extremely frustrating so I demand a quick resolution.
     ground_truth:
       orchestrator:
@@ -2556,7 +2360,7 @@ utterances_and_ground_truths:
         log_customer_request:
           customer_id: "CUST00475208435754"
           request: |
-            This is Aliciaze Stephanopolous with account ACC998877235429238345235429238345. 
+            This is Aliciaze Stephanopolous with account ACC998877235429238345235429238345.
             I am having an issue.
             I was charged twice for my software license renewal on April 12th 2025.
             Can you help me with this? I really need to resolve this.
@@ -2569,15 +2373,15 @@ utterances_and_ground_truths:
             {
               "sentiment": "negative",
               "confidence": 0.97,
-              "emotions": [ "frustration" ]
+              "emotions": ["frustration"],
             }
           intents:
             [
               {
                 "intent": "billing_dispute",
                 "intent_type": "Complex Issue",
-                "confidence": 0.93
-              }
+                "confidence": 0.93,
+              },
             ]
         get_entities:
           source_id: INT001243634754
@@ -2586,41 +2390,28 @@ utterances_and_ground_truths:
           case_type: "customer_support"
         get_fields_to_update:
           source_id: INT001243634754
-          extracted_entities: [
-            {
-              "entity_name": "account_number",
-              "entity_value": "ACC998877235429238345235429238345"
-            },
-            {
-              "entity_name": "charge_amount",
-              "entity_value": "87.34"
-            },
-            {
-              "entity_name": "charge_date",
-              "entity_value": "2025-04-12"
-            }
-          ]
+          extracted_entities:
+            [
+              {
+                "entity_name": "account_number",
+                "entity_value": "ACC998877235429238345235429238345",
+              },
+              { "entity_name": "charge_amount", "entity_value": "87.34" },
+              { "entity_name": "charge_date", "entity_value": "2025-04-12" },
+            ]
         documents_checklist:
           case_type: "customer_support"
         verify_the_documents:
           record_id: INT001243634754
         status_report:
-          missing_documents:
-            [ ]
-          verified_documents:
-            [ "DOC3245252",
-              "DOC3245292",
-              "DOC3245302" ]
+          missing_documents: []
+          verified_documents: ["DOC3245252", "DOC3245292", "DOC3245302"]
           all_documents_verified: true
         create_case:
           case_type: "customer_support"
           assigned_to: "billing"
-          target_field_and_values: [
-            {
-              "target_field": "charge_amount",
-              "target_value": "87.34"
-            }
-          ]
+          target_field_and_values:
+            [{ "target_field": "charge_amount", "target_value": "87.34" }]
         add_resolution_steps:
           case_id: CASE00IEFOWE5238523256
         link_interaction_to_case:
@@ -2633,15 +2424,14 @@ utterances_and_ground_truths:
         draft_email:
           to: Aliciaze.Stephanopolous@outlook.com
         send_email:
-          draft_id:
-            DRAFT010
+          draft_id: DRAFT010
   - id: "28"
     user_utterance: |
-      This is Jerry Jones with account ACC56. 
+      This is Jerry Jones with account ACC56.
       I am having an issue.
-      I was charged twice for my software license renewal on April 12th 2025. 
+      I was charged twice for my software license renewal on April 12th 2025.
       Can you help me with this? I really need to resolve this.
-      Each charge is $93.29 and I only authorized one payment. 
+      Each charge is $93.29 and I only authorized one payment.
       The extra charge has affected my monthly budget which is extremely frustrating so I demand a quick resolution.
     ground_truth:
       orchestrator:
@@ -2693,7 +2483,7 @@ utterances_and_ground_truths:
         log_customer_request:
           customer_id: "CUST00475208435754"
           request: |
-            This is Jerry Jones with account ACC56. 
+            This is Jerry Jones with account ACC56.
             I am having an issue.
             I was charged twice for my software license renewal on April 12th 2025.
             Can you help me with this? I really need to resolve this.
@@ -2706,15 +2496,15 @@ utterances_and_ground_truths:
             {
               "sentiment": "negative",
               "confidence": 0.97,
-              "emotions": [ "frustration" ]
+              "emotions": ["frustration"],
             }
           intents:
             [
               {
                 "intent": "billing_dispute",
                 "intent_type": "Complex Issue",
-                "confidence": 0.93
-              }
+                "confidence": 0.93,
+              },
             ]
         get_entities:
           source_id: INT001243634754
@@ -2723,41 +2513,25 @@ utterances_and_ground_truths:
           case_type: "customer_support"
         get_fields_to_update:
           source_id: INT001243634754
-          extracted_entities: [
-            {
-              "entity_name": "account_number",
-              "entity_value": "ACC56"
-            },
-            {
-              "entity_name": "charge_amount",
-              "entity_value": "93.29"
-            },
-            {
-              "entity_name": "charge_date",
-              "entity_value": "2025-04-12"
-            }
-          ]
+          extracted_entities:
+            [
+              { "entity_name": "account_number", "entity_value": "ACC56" },
+              { "entity_name": "charge_amount", "entity_value": "93.29" },
+              { "entity_name": "charge_date", "entity_value": "2025-04-12" },
+            ]
         documents_checklist:
           case_type: "customer_support"
         verify_the_documents:
           record_id: INT001243634754
         status_report:
-          missing_documents:
-            [ ]
-          verified_documents:
-            [ "DOC3245252",
-              "DOC3245292",
-              "DOC3245302" ]
+          missing_documents: []
+          verified_documents: ["DOC3245252", "DOC3245292", "DOC3245302"]
           all_documents_verified: true
         create_case:
           case_type: "customer_support"
           assigned_to: "billing"
-          target_field_and_values: [
-            {
-              "target_field": "charge_amount",
-              "target_value": "93.29"
-            }
-          ]
+          target_field_and_values:
+            [{ "target_field": "charge_amount", "target_value": "93.29" }]
         add_resolution_steps:
           case_id: CASE00IEFOWE5238523256
         link_interaction_to_case:
@@ -2770,11 +2544,10 @@ utterances_and_ground_truths:
         draft_email:
           to: Jerry.Jones@outlook.com
         send_email:
-          draft_id:
-            DRAFT010
+          draft_id: DRAFT010
   - id: "29"
     user_utterance: |
-      This is Jerry Jones with account ACC56. I was charged twice on the sixth of april 2025. 
+      This is Jerry Jones with account ACC56. I was charged twice on the sixth of april 2025.
       Each charge is $1934.44 but I only authorized one payment. This is the fifth time i've had this issue and im starting to get really frustrated and am considering changing providers at this point.
       How does this same mistake keep happening over and over!!
       Please fix this ASAP!!!
@@ -2839,15 +2612,15 @@ utterances_and_ground_truths:
             {
               "sentiment": "negative",
               "confidence": 0.83,
-              "emotions": [ "frustration" ]
+              "emotions": ["frustration"],
             }
           intents:
             [
               {
                 "intent": "billing_dispute",
                 "intent_type": "Complex Issue",
-                "confidence": 0.93
-              }
+                "confidence": 0.93,
+              },
             ]
         get_entities:
           source_id: INT001243634754
@@ -2856,41 +2629,25 @@ utterances_and_ground_truths:
           case_type: "customer_support"
         get_fields_to_update:
           source_id: INT001243634754
-          extracted_entities: [
-            {
-              "entity_name": "account_number",
-              "entity_value": "ACC56"
-            },
-            {
-              "entity_name": "charge_amount",
-              "entity_value": "1934.44"
-            },
-            {
-              "entity_name": "charge_date",
-              "entity_value": "2025-04-12"
-            }
-          ]
+          extracted_entities:
+            [
+              { "entity_name": "account_number", "entity_value": "ACC56" },
+              { "entity_name": "charge_amount", "entity_value": "1934.44" },
+              { "entity_name": "charge_date", "entity_value": "2025-04-12" },
+            ]
         documents_checklist:
           case_type: "customer_support"
         verify_the_documents:
           record_id: INT001243634754
         status_report:
-          missing_documents:
-            [ ]
-          verified_documents:
-            [ "DOC3245252",
-              "DOC3245292",
-              "DOC3245302" ]
+          missing_documents: []
+          verified_documents: ["DOC3245252", "DOC3245292", "DOC3245302"]
           all_documents_verified: true
         create_case:
           case_type: "customer_support"
           assigned_to: "billing"
-          target_field_and_values: [
-            {
-              "target_field": "charge_amount",
-              "target_value": "1934.44"
-            }
-          ]
+          target_field_and_values:
+            [{ "target_field": "charge_amount", "target_value": "1934.44" }]
         add_resolution_steps:
           case_id: CASE00IEFOWE5238523256
         link_interaction_to_case:
@@ -2903,12 +2660,11 @@ utterances_and_ground_truths:
         draft_email:
           to: Jerry.Jones@outlook.com
         send_email:
-          draft_id:
-            DRAFT010
+          draft_id: DRAFT010
   - id: "30"
     user_utterance: |
-      This is Haliva Jones with account ACC56. I was charged twice on the sixth of april 2025. 
-      Each charge is $546.57 but I only authorized one payment. 
+      This is Haliva Jones with account ACC56. I was charged twice on the sixth of april 2025.
+      Each charge is $546.57 but I only authorized one payment.
       How does this same mistake keep happening over and over!!
       Please fix this ASAP!!!
     ground_truth:
@@ -2962,7 +2718,7 @@ utterances_and_ground_truths:
           customer_id: "CUST00475208435754"
           request: |
             This is Haliva Jones with account ACC56. I was charged twice on the sixth of april 2025.
-            Each charge is $546.57 but I only authorized one payment. 
+            Each charge is $546.57 but I only authorized one payment.
             How does this same mistake keep happening over and over!!
             Please fix this ASAP!!!
         update_customer_request_with_sentiment_and_intents:
@@ -2972,15 +2728,15 @@ utterances_and_ground_truths:
             {
               "sentiment": "negative",
               "confidence": 0.83,
-              "emotions": [ "frustration" ]
+              "emotions": ["frustration"],
             }
           intents:
             [
               {
                 "intent": "billing_dispute",
                 "intent_type": "Complex Issue",
-                "confidence": 0.93
-              }
+                "confidence": 0.93,
+              },
             ]
         get_entities:
           source_id: INT001243634754
@@ -2989,41 +2745,25 @@ utterances_and_ground_truths:
           case_type: "customer_support"
         get_fields_to_update:
           source_id: INT001243634754
-          extracted_entities: [
-            {
-              "entity_name": "account_number",
-              "entity_value": "ACC56"
-            },
-            {
-              "entity_name": "charge_amount",
-              "entity_value": "546.57"
-            },
-            {
-              "entity_name": "charge_date",
-              "entity_value": "2025-04-12"
-            }
-          ]
+          extracted_entities:
+            [
+              { "entity_name": "account_number", "entity_value": "ACC56" },
+              { "entity_name": "charge_amount", "entity_value": "546.57" },
+              { "entity_name": "charge_date", "entity_value": "2025-04-12" },
+            ]
         documents_checklist:
           case_type: "customer_support"
         verify_the_documents:
           record_id: INT001243634754
         status_report:
-          missing_documents:
-            [ ]
-          verified_documents:
-            [ "DOC3",
-              "DOCU_2352_X",
-              "DOC3245302" ]
+          missing_documents: []
+          verified_documents: ["DOC3", "DOCU_2352_X", "DOC3245302"]
           all_documents_verified: true
         create_case:
           case_type: "customer_support"
           assigned_to: "billing"
-          target_field_and_values: [
-            {
-              "target_field": "charge_amount",
-              "target_value": "546.57"
-            }
-          ]
+          target_field_and_values:
+            [{ "target_field": "charge_amount", "target_value": "546.57" }]
         add_resolution_steps:
           case_id: CASE349
         link_interaction_to_case:
@@ -3036,538 +2776,522 @@ utterances_and_ground_truths:
         draft_email:
           to: Haliva.Jones@outlook.com
         send_email:
-          draft_id:
-            DRAFT010
+          draft_id: DRAFT010
   - id: "31"
     user_utterance: |
-        Hello, this is Sarah Chen with account ACC89. I'd like to know what the warranty coverage is for my recent laptop purchase, order #ORD-2025-0489. 
-        Also, could you please update my shipping address to 4521 Oak Avenue, San Jose, CA 95110? 
-        I'm planning to make another purchase soon and want to make sure everything is updated.
+      Hello, this is Sarah Chen with account ACC89. I'd like to know what the warranty coverage is for my recent laptop purchase, order #ORD-2025-0489.
+      Also, could you please update my shipping address to 4521 Oak Avenue, San Jose, CA 95110?
+      I'm planning to make another purchase soon and want to make sure everything is updated.
     ground_truth:
-        orchestrator:
-          agent_selections:
-            - request_validation_agent
-            - duplicate_detection_agent
-            - informational_queries_agent
-            - transactional_query_responder_agent
-            - email_agent
-        final_response: "No new case created"
-        tool_order:
-          - - verify_customer_exists
-            - lookup_and_verify_customer_information
-            - check_for_escalation
-            - log_customer_request
-            - get_intents
-            - get_sentiment
-            - update_customer_request_with_sentiment_and_intents
-            - get_similar_cases
-            - get_missing_context
-            - get_relevant_knowledge_articles
-            - save_informational_agent_summary
-            - get_entities
-            - get_whitelisted_fields_and_task_definition
-            - get_fields_to_update
-            - update_record
-            - save_transactional_agent_summary
-            - draft_email
-            - send_email
-        min_custom_tool_number: 18
-        tool_args:
-          verify_customer_exists:
-            account_number: "ACC89"
-          lookup_and_verify_customer_information:
-            customer_id: "CUST00892346781234"
-          check_for_escalation:
-            account_number: "ACC89"
-          get_intents:
-            source_id: "INT001567894321"
-            source_table: "interaction"
-          get_sentiment:
-            source_id: "INT001567894321"
-            source_table: "interaction"
-          log_customer_request:
-            customer_id: "CUST00892346781234"
-            request: |
-              Hello, this is Sarah Chen with account ACC89. I'd like to know what the warranty coverage is for my recent laptop purchase, order #ORD-2025-0489. 
-              Also, could you please update my shipping address to 4521 Oak Avenue, San Jose, CA 95110? 
-              I'm planning to make another purchase soon and want to make sure everything is updated.
-          update_customer_request_with_sentiment_and_intents:
-            source_id: "INT001567894321"
-            source_table: "interaction"
-            sentiment:
+      orchestrator:
+        agent_selections:
+          - request_validation_agent
+          - duplicate_detection_agent
+          - informational_queries_agent
+          - transactional_query_responder_agent
+          - email_agent
+      final_response: "No new case created"
+      tool_order:
+        - - verify_customer_exists
+          - lookup_and_verify_customer_information
+          - check_for_escalation
+          - log_customer_request
+          - get_intents
+          - get_sentiment
+          - update_customer_request_with_sentiment_and_intents
+          - get_similar_cases
+          - get_missing_context
+          - get_relevant_knowledge_articles
+          - save_informational_agent_summary
+          - get_entities
+          - get_whitelisted_fields_and_task_definition
+          - get_fields_to_update
+          - update_record
+          - save_transactional_agent_summary
+          - draft_email
+          - send_email
+      min_custom_tool_number: 18
+      tool_args:
+        verify_customer_exists:
+          account_number: "ACC89"
+        lookup_and_verify_customer_information:
+          customer_id: "CUST00892346781234"
+        check_for_escalation:
+          account_number: "ACC89"
+        get_intents:
+          source_id: "INT001567894321"
+          source_table: "interaction"
+        get_sentiment:
+          source_id: "INT001567894321"
+          source_table: "interaction"
+        log_customer_request:
+          customer_id: "CUST00892346781234"
+          request: |
+            Hello, this is Sarah Chen with account ACC89. I'd like to know what the warranty coverage is for my recent laptop purchase, order #ORD-2025-0489.
+            Also, could you please update my shipping address to 4521 Oak Avenue, San Jose, CA 95110?
+            I'm planning to make another purchase soon and want to make sure everything is updated.
+        update_customer_request_with_sentiment_and_intents:
+          source_id: "INT001567894321"
+          source_table: "interaction"
+          sentiment:
+            {
+              "sentiment": "neutral",
+              "confidence": 0.91,
+              "emotions": ["inquisitive"],
+            }
+          intents:
+            [
               {
-                "sentiment": "neutral",
-                "confidence": 0.91,
-                "emotions": [ "inquisitive" ]
-              }
-            intents:
-              [
-                {
-                  "intent": "warranty_inquiry",
-                  "intent_type": "Informational",
-                  "confidence": 0.95
-                },
-                {
-                  "intent": "address_update",
-                  "intent_type": "Transactional",
-                  "confidence": 0.93
-                }
-              ]
-          get_entities:
-            source_id: "INT001567894321"
-            source_table: "interaction"
-          get_whitelisted_fields_and_task_definition:
-            case_type: "customer_support"
-          get_fields_to_update:
-            source_id: "INT001567894321"
-            extracted_entities: [
+                "intent": "warranty_inquiry",
+                "intent_type": "Informational",
+                "confidence": 0.95,
+              },
+              {
+                "intent": "address_update",
+                "intent_type": "Transactional",
+                "confidence": 0.93,
+              },
+            ]
+        get_entities:
+          source_id: "INT001567894321"
+          source_table: "interaction"
+        get_whitelisted_fields_and_task_definition:
+          case_type: "customer_support"
+        get_fields_to_update:
+          source_id: "INT001567894321"
+          extracted_entities:
+            [
               {
                 "entity_name": "shipping_address",
-                "entity_value": "4521 Oak Avenue, San Jose, CA 95110"
+                "entity_value": "4521 Oak Avenue, San Jose, CA 95110",
               },
               {
                 "entity_name": "order_number",
-                "entity_value": "ORD-2025-0489"
-              }
+                "entity_value": "ORD-2025-0489",
+              },
             ]
-          update_record:
-            record_table: "customer"
-            record_id: "CUST00892346781234"
-            fields_to_update:
-              [
-                {
-                  "target_field": "shipping_address",
-                  "target_value": "4521 Oak Avenue, San Jose, CA 95110"
-                }
-              ]
-          draft_email:
-            to: "sarah.chen@techcorp.com"
-          send_email:
-            draft_id: "DRAFT011"
+        update_record:
+          record_table: "customer"
+          record_id: "CUST00892346781234"
+          fields_to_update:
+            [
+              {
+                "target_field": "shipping_address",
+                "target_value": "4521 Oak Avenue, San Jose, CA 95110",
+              },
+            ]
+        draft_email:
+          to: "sarah.chen@techcorp.com"
+        send_email:
+          draft_id: "DRAFT011"
   - id: "32"
     user_utterance: |
-        Hi there, I'm Marcus Williams with account ACC74. I wanted to check what my current subscription plan includes and when it renews. 
-        Also, can you update my email from the old one to marcus.williams@globaltech.com? 
-        I'm considering upgrading to a higher tier plan if there are good features available.
+      Hi there, I'm Marcus Williams with account ACC74. I wanted to check what my current subscription plan includes and when it renews.
+      Also, can you update my email from the old one to marcus.williams@globaltech.com?
+      I'm considering upgrading to a higher tier plan if there are good features available.
     ground_truth:
-        orchestrator:
-          agent_selections:
-            - request_validation_agent
-            - duplicate_detection_agent
-            - informational_queries_agent
-            - transactional_query_responder_agent
-            - email_agent
-        final_response: "No new case created"
-        tool_order:
-          - - verify_customer_exists
-            - lookup_and_verify_customer_information
-            - check_for_escalation
-            - log_customer_request
-            - get_intents
-            - get_sentiment
-            - update_customer_request_with_sentiment_and_intents
-            - get_similar_cases
-            - get_missing_context
-            - get_relevant_knowledge_articles
-            - save_informational_agent_summary
-            - get_entities
-            - get_whitelisted_fields_and_task_definition
-            - get_fields_to_update
-            - update_record
-            - save_transactional_agent_summary
-            - draft_email
-            - send_email
-        min_custom_tool_number: 18
-        tool_args:
-          verify_customer_exists:
-            account_number: "ACC74"
-          lookup_and_verify_customer_information:
-            customer_id: "CUST00742589631478"
-          check_for_escalation:
-            account_number: "ACC74"
-          get_intents:
-            source_id: "INT001789456123"
-            source_table: "interaction"
-          get_sentiment:
-            source_id: "INT001789456123"
-            source_table: "interaction"
-          log_customer_request:
-            customer_id: "CUST00742589631478"
-            request: |
-              Hi there, I'm Marcus Williams with account ACC74. I wanted to check what my current subscription plan includes and when it renews. 
-              Also, can you update my email from the old one to marcus.williams@globaltech.com? 
-              I'm considering upgrading to a higher tier plan if there are good features available.
-          update_customer_request_with_sentiment_and_intents:
-            source_id: "INT001789456123"
-            source_table: "interaction"
-            sentiment:
+      orchestrator:
+        agent_selections:
+          - request_validation_agent
+          - duplicate_detection_agent
+          - informational_queries_agent
+          - transactional_query_responder_agent
+          - email_agent
+      final_response: "No new case created"
+      tool_order:
+        - - verify_customer_exists
+          - lookup_and_verify_customer_information
+          - check_for_escalation
+          - log_customer_request
+          - get_intents
+          - get_sentiment
+          - update_customer_request_with_sentiment_and_intents
+          - get_similar_cases
+          - get_missing_context
+          - get_relevant_knowledge_articles
+          - save_informational_agent_summary
+          - get_entities
+          - get_whitelisted_fields_and_task_definition
+          - get_fields_to_update
+          - update_record
+          - save_transactional_agent_summary
+          - draft_email
+          - send_email
+      min_custom_tool_number: 18
+      tool_args:
+        verify_customer_exists:
+          account_number: "ACC74"
+        lookup_and_verify_customer_information:
+          customer_id: "CUST00742589631478"
+        check_for_escalation:
+          account_number: "ACC74"
+        get_intents:
+          source_id: "INT001789456123"
+          source_table: "interaction"
+        get_sentiment:
+          source_id: "INT001789456123"
+          source_table: "interaction"
+        log_customer_request:
+          customer_id: "CUST00742589631478"
+          request: |
+            Hi there, I'm Marcus Williams with account ACC74. I wanted to check what my current subscription plan includes and when it renews.
+            Also, can you update my email from the old one to marcus.williams@globaltech.com?
+            I'm considering upgrading to a higher tier plan if there are good features available.
+        update_customer_request_with_sentiment_and_intents:
+          source_id: "INT001789456123"
+          source_table: "interaction"
+          sentiment:
+            {
+              "sentiment": "neutral",
+              "confidence": 0.89,
+              "emotions": ["curious", "interested"],
+            }
+          intents:
+            [
               {
-                "sentiment": "neutral",
-                "confidence": 0.89,
-                "emotions": [ "curious", "interested" ]
-              }
-            intents:
-              [
-                {
-                  "intent": "subscription_inquiry",
-                  "intent_type": "Informational",
-                  "confidence": 0.94
-                },
-                {
-                  "intent": "email_update",
-                  "intent_type": "Transactional",
-                  "confidence": 0.96
-                }
-              ]
-          get_entities:
-            source_id: "INT001789456123"
-            source_table: "interaction"
-          get_whitelisted_fields_and_task_definition:
-            case_type: "customer_support"
-          get_fields_to_update:
-            source_id: "INT001789456123"
-            extracted_entities: [
-              {
-                "entity_name": "email",
-                "entity_value": "marcus.williams@globaltech.com"
+                "intent": "subscription_inquiry",
+                "intent_type": "Informational",
+                "confidence": 0.94,
               },
               {
-                "entity_name": "account_number",
-                "entity_value": "ACC74"
-              }
+                "intent": "email_update",
+                "intent_type": "Transactional",
+                "confidence": 0.96,
+              },
             ]
-          update_record:
-            record_table: "customer"
-            record_id: "CUST00742589631478"
-            fields_to_update:
-              [
-                {
-                  "target_field": "email",
-                  "target_value": "marcus.williams@globaltech.com"
-                }
-              ]
-          send_email:
-            draft_id: "DRAFT012"
-          draft_email:
-            to: marcus.williams@globaltech.com
+        get_entities:
+          source_id: "INT001789456123"
+          source_table: "interaction"
+        get_whitelisted_fields_and_task_definition:
+          case_type: "customer_support"
+        get_fields_to_update:
+          source_id: "INT001789456123"
+          extracted_entities:
+            [
+              {
+                "entity_name": "email",
+                "entity_value": "marcus.williams@globaltech.com",
+              },
+              { "entity_name": "account_number", "entity_value": "ACC74" },
+            ]
+        update_record:
+          record_table: "customer"
+          record_id: "CUST00742589631478"
+          fields_to_update:
+            [
+              {
+                "target_field": "email",
+                "target_value": "marcus.williams@globaltech.com",
+              },
+            ]
+        send_email:
+          draft_id: "DRAFT012"
+        draft_email:
+          to: marcus.williams@globaltech.com
   - id: "33"
     user_utterance: |
-        Good morning, this is Jennifer Park with account ACC42. Can you tell me about the data export options available with my current plan? 
-        I'd also like to update my phone number to 415-555-7823 since I've changed carriers. 
-        We're doing some internal reporting and need to understand the best way to extract our data.
+      Good morning, this is Jennifer Park with account ACC42. Can you tell me about the data export options available with my current plan?
+      I'd also like to update my phone number to 415-555-7823 since I've changed carriers.
+      We're doing some internal reporting and need to understand the best way to extract our data.
     ground_truth:
-        orchestrator:
-          agent_selections:
-            - request_validation_agent
-            - duplicate_detection_agent
-            - informational_queries_agent
-            - transactional_query_responder_agent
-            - email_agent
-        final_response: "No new case created"
-        tool_order:
-          - - verify_customer_exists
-            - lookup_and_verify_customer_information
-            - check_for_escalation
-            - log_customer_request
-            - get_intents
-            - get_sentiment
-            - update_customer_request_with_sentiment_and_intents
-            - get_similar_cases
-            - get_missing_context
-            - get_relevant_knowledge_articles
-            - save_informational_agent_summary
-            - get_entities
-            - get_whitelisted_fields_and_task_definition
-            - get_fields_to_update
-            - update_record
-            - save_transactional_agent_summary
-            - draft_email
-            - send_email
-        min_custom_tool_number: 18
-        tool_args:
-          verify_customer_exists:
-            account_number: "ACC42"
-          lookup_and_verify_customer_information:
-            customer_id: "CUST00423698521470"
-          check_for_escalation:
-            account_number: "ACC42"
-          get_intents:
-            source_id: "INT001963852741"
-            source_table: "interaction"
-          get_sentiment:
-            source_id: "INT001963852741"
-            source_table: "interaction"
-          log_customer_request:
-            customer_id: "CUST00423698521470"
-            request: |
-              Good morning, this is Jennifer Park with account ACC42. Can you tell me about the data export options available with my current plan? 
-              I'd also like to update my phone number to 415-555-7823 since I've changed carriers. 
-              We're doing some internal reporting and need to understand the best way to extract our data.
-          update_customer_request_with_sentiment_and_intents:
-            source_id: "INT001963852741"
-            source_table: "interaction"
-            sentiment:
+      orchestrator:
+        agent_selections:
+          - request_validation_agent
+          - duplicate_detection_agent
+          - informational_queries_agent
+          - transactional_query_responder_agent
+          - email_agent
+      final_response: "No new case created"
+      tool_order:
+        - - verify_customer_exists
+          - lookup_and_verify_customer_information
+          - check_for_escalation
+          - log_customer_request
+          - get_intents
+          - get_sentiment
+          - update_customer_request_with_sentiment_and_intents
+          - get_similar_cases
+          - get_missing_context
+          - get_relevant_knowledge_articles
+          - save_informational_agent_summary
+          - get_entities
+          - get_whitelisted_fields_and_task_definition
+          - get_fields_to_update
+          - update_record
+          - save_transactional_agent_summary
+          - draft_email
+          - send_email
+      min_custom_tool_number: 18
+      tool_args:
+        verify_customer_exists:
+          account_number: "ACC42"
+        lookup_and_verify_customer_information:
+          customer_id: "CUST00423698521470"
+        check_for_escalation:
+          account_number: "ACC42"
+        get_intents:
+          source_id: "INT001963852741"
+          source_table: "interaction"
+        get_sentiment:
+          source_id: "INT001963852741"
+          source_table: "interaction"
+        log_customer_request:
+          customer_id: "CUST00423698521470"
+          request: |
+            Good morning, this is Jennifer Park with account ACC42. Can you tell me about the data export options available with my current plan?
+            I'd also like to update my phone number to 415-555-7823 since I've changed carriers.
+            We're doing some internal reporting and need to understand the best way to extract our data.
+        update_customer_request_with_sentiment_and_intents:
+          source_id: "INT001963852741"
+          source_table: "interaction"
+          sentiment:
+            {
+              "sentiment": "neutral",
+              "confidence": 0.92,
+              "emotions": ["professional", "focused"],
+            }
+          intents:
+            [
               {
-                "sentiment": "neutral",
-                "confidence": 0.92,
-                "emotions": [ "professional", "focused" ]
-              }
-            intents:
-              [
-                {
-                  "intent": "data_export_inquiry",
-                  "intent_type": "Informational",
-                  "confidence": 0.96
-                },
-                {
-                  "intent": "phone_update",
-                  "intent_type": "Transactional",
-                  "confidence": 0.95
-                }
-              ]
-          get_entities:
-            source_id: "INT001963852741"
-            source_table: "interaction"
-          get_whitelisted_fields_and_task_definition:
-            case_type: "customer_support"
-          get_fields_to_update:
-            source_id: "INT001963852741"
-            extracted_entities: [
-              {
-                "entity_name": "phone_number",
-                "entity_value": "415-555-7823"
+                "intent": "data_export_inquiry",
+                "intent_type": "Informational",
+                "confidence": 0.96,
               },
               {
-                "entity_name": "account_number",
-                "entity_value": "ACC42"
-              }
+                "intent": "phone_update",
+                "intent_type": "Transactional",
+                "confidence": 0.95,
+              },
             ]
-          update_record:
-            record_table: "customer"
-            record_id: "CUST00423698521470"
-            fields_to_update:
-              [
-                {
-                  "target_field": "phone_number",
-                  "target_value": "415-555-7823"
-                }
-              ]
-          send_email:
-            draft_id: "DRAFT013"
-          draft_email:
-            to: "jpark@bayareaconsulting.com"
+        get_entities:
+          source_id: "INT001963852741"
+          source_table: "interaction"
+        get_whitelisted_fields_and_task_definition:
+          case_type: "customer_support"
+        get_fields_to_update:
+          source_id: "INT001963852741"
+          extracted_entities:
+            [
+              { "entity_name": "phone_number", "entity_value": "415-555-7823" },
+              { "entity_name": "account_number", "entity_value": "ACC42" },
+            ]
+        update_record:
+          record_table: "customer"
+          record_id: "CUST00423698521470"
+          fields_to_update:
+            [{ "target_field": "phone_number", "target_value": "415-555-7823" }]
+        send_email:
+          draft_id: "DRAFT013"
+        draft_email:
+          to: "jpark@bayareaconsulting.com"
   - id: "34"
     user_utterance: |
-        Hello, my name is Robert Thompson from account ACC67. I need information about the security features available for my account and user access controls. 
-        Also, please update my billing address to 8900 Market Street, Suite 450, Philadelphia, PA 19107. 
-        Our company is going through a security audit and I need to document our current security setup.
+      Hello, my name is Robert Thompson from account ACC67. I need information about the security features available for my account and user access controls.
+      Also, please update my billing address to 8900 Market Street, Suite 450, Philadelphia, PA 19107.
+      Our company is going through a security audit and I need to document our current security setup.
     ground_truth:
-        orchestrator:
-          agent_selections:
-            - request_validation_agent
-            - duplicate_detection_agent
-            - informational_queries_agent
-            - transactional_query_responder_agent
-            - email_agent
-        final_response: "No new case created"
-        tool_order:
-          - - verify_customer_exists
-            - lookup_and_verify_customer_information
-            - check_for_escalation
-            - log_customer_request
-            - get_intents
-            - get_sentiment
-            - update_customer_request_with_sentiment_and_intents
-            - get_similar_cases
-            - get_missing_context
-            - get_relevant_knowledge_articles
-            - save_informational_agent_summary
-            - get_entities
-            - get_whitelisted_fields_and_task_definition
-            - get_fields_to_update
-            - update_record
-            - save_transactional_agent_summary
-            - draft_email
-            - send_email
-        min_custom_tool_number: 18
-        tool_args:
-          verify_customer_exists:
-            account_number: "ACC67"
-          lookup_and_verify_customer_information:
-            customer_id: "CUST00674851239647"
-          check_for_escalation:
-            account_number: "ACC67"
-          get_intents:
-            source_id: "INT001852963741"
-            source_table: "interaction"
-          get_sentiment:
-            source_id: "INT001852963741"
-            source_table: "interaction"
-          log_customer_request:
-            customer_id: "CUST00674851239647"
-            request: |
-              Hello, my name is Robert Thompson from account ACC67. I need information about the security features available for my account and user access controls. 
-              Also, please update my billing address to 8900 Market Street, Suite 450, Philadelphia, PA 19107. 
-              Our company is going through a security audit and I need to document our current security setup.
-          update_customer_request_with_sentiment_and_intents:
-            source_id: "INT001852963741"
-            source_table: "interaction"
-            sentiment:
+      orchestrator:
+        agent_selections:
+          - request_validation_agent
+          - duplicate_detection_agent
+          - informational_queries_agent
+          - transactional_query_responder_agent
+          - email_agent
+      final_response: "No new case created"
+      tool_order:
+        - - verify_customer_exists
+          - lookup_and_verify_customer_information
+          - check_for_escalation
+          - log_customer_request
+          - get_intents
+          - get_sentiment
+          - update_customer_request_with_sentiment_and_intents
+          - get_similar_cases
+          - get_missing_context
+          - get_relevant_knowledge_articles
+          - save_informational_agent_summary
+          - get_entities
+          - get_whitelisted_fields_and_task_definition
+          - get_fields_to_update
+          - update_record
+          - save_transactional_agent_summary
+          - draft_email
+          - send_email
+      min_custom_tool_number: 18
+      tool_args:
+        verify_customer_exists:
+          account_number: "ACC67"
+        lookup_and_verify_customer_information:
+          customer_id: "CUST00674851239647"
+        check_for_escalation:
+          account_number: "ACC67"
+        get_intents:
+          source_id: "INT001852963741"
+          source_table: "interaction"
+        get_sentiment:
+          source_id: "INT001852963741"
+          source_table: "interaction"
+        log_customer_request:
+          customer_id: "CUST00674851239647"
+          request: |
+            Hello, my name is Robert Thompson from account ACC67. I need information about the security features available for my account and user access controls.
+            Also, please update my billing address to 8900 Market Street, Suite 450, Philadelphia, PA 19107.
+            Our company is going through a security audit and I need to document our current security setup.
+        update_customer_request_with_sentiment_and_intents:
+          source_id: "INT001852963741"
+          source_table: "interaction"
+          sentiment:
+            {
+              "sentiment": "neutral",
+              "confidence": 0.88,
+              "emotions": ["businesslike", "procedural"],
+            }
+          intents:
+            [
               {
-                "sentiment": "neutral",
-                "confidence": 0.88,
-                "emotions": ["businesslike", "procedural"]
-              }
-            intents:
-              [
-                {
-                  "intent": "security_features_inquiry",
-                  "intent_type": "Informational",
-                  "confidence": 0.97
-                },
-                {
-                  "intent": "billing_address_update",
-                  "intent_type": "Transactional",
-                  "confidence": 0.94
-                }
-              ]
-          get_entities:
-            source_id: "INT001852963741"
-            source_table: "interaction"
-          get_whitelisted_fields_and_task_definition:
-            case_type: "customer_support"
-          get_fields_to_update:
-            source_id: "INT001852963741"
-            extracted_entities: [
+                "intent": "security_features_inquiry",
+                "intent_type": "Informational",
+                "confidence": 0.97,
+              },
+              {
+                "intent": "billing_address_update",
+                "intent_type": "Transactional",
+                "confidence": 0.94,
+              },
+            ]
+        get_entities:
+          source_id: "INT001852963741"
+          source_table: "interaction"
+        get_whitelisted_fields_and_task_definition:
+          case_type: "customer_support"
+        get_fields_to_update:
+          source_id: "INT001852963741"
+          extracted_entities:
+            [
               {
                 "entity_name": "billing_address",
-                "entity_value": "8900 Market Street, Suite 450, Philadelphia, PA 19107"
+                "entity_value": "8900 Market Street, Suite 450, Philadelphia, PA 19107",
               },
-              {
-                "entity_name": "account_number",
-                "entity_value": "ACC67"
-              }
+              { "entity_name": "account_number", "entity_value": "ACC67" },
             ]
-          update_record:
-            record_table: "customer"
-            record_id: "CUST00674851239647"
-            fields_to_update:
-              [
-                {
-                  "target_field": "billing_address",
-                  "target_value": "8900 Market Street, Suite 450, Philadelphia, PA 19107"
-                }
-              ]
-          draft_email:
-            to: rthompson@atlantic-financial.com
-          send_email:
-            draft_id: "DRAFT014"
+        update_record:
+          record_table: "customer"
+          record_id: "CUST00674851239647"
+          fields_to_update:
+            [
+              {
+                "target_field": "billing_address",
+                "target_value": "8900 Market Street, Suite 450, Philadelphia, PA 19107",
+              },
+            ]
+        draft_email:
+          to: rthompson@atlantic-financial.com
+        send_email:
+          draft_id: "DRAFT014"
   - id: "35"
     user_utterance: |
-        Hi, this is David Martinez with account ACC91. I'd like to learn about the integration options available for connecting our CRM system with your platform. 
-        Could you also update my company email to david.martinez@techventures.io? We just rebranded and I need to update all our accounts. 
-        We're evaluating how to streamline our workflow between systems.
+      Hi, this is David Martinez with account ACC91. I'd like to learn about the integration options available for connecting our CRM system with your platform.
+      Could you also update my company email to david.martinez@techventures.io? We just rebranded and I need to update all our accounts.
+      We're evaluating how to streamline our workflow between systems.
     ground_truth:
-        orchestrator:
-          agent_selections:
-            - request_validation_agent
-            - duplicate_detection_agent
-            - informational_queries_agent
-            - transactional_query_responder_agent
-            - email_agent
-        final_response: "No new case created"
-        tool_order:
-          - - verify_customer_exists
-            - lookup_and_verify_customer_information
-            - check_for_escalation
-            - log_customer_request
-            - get_intents
-            - get_sentiment
-            - update_customer_request_with_sentiment_and_intents
-            - get_similar_cases
-            - get_missing_context
-            - get_relevant_knowledge_articles
-            - save_informational_agent_summary
-            - get_entities
-            - get_whitelisted_fields_and_task_definition
-            - get_fields_to_update
-            - update_record
-            - save_transactional_agent_summary
-            - draft_email
-            - send_email
-        min_custom_tool_number: 18
-        tool_args:
-          verify_customer_exists:
-            account_number: "ACC91"
-          lookup_and_verify_customer_information:
-            customer_id: "CUST00915874632589"
-          check_for_escalation:
-            account_number: "ACC91"
-          get_intents:
-            source_id: "INT001478523690"
-            source_table: "interaction"
-          get_sentiment:
-            source_id: "INT001478523690"
-            source_table: "interaction"
-          log_customer_request:
-            customer_id: "CUST00915874632589"
-            request: |
-              Hi, this is David Martinez with account ACC91. I'd like to learn about the integration options available for connecting our CRM system with your platform. 
-              Could you also update my company email to david.martinez@techventures.io? We just rebranded and I need to update all our accounts. 
-              We're evaluating how to streamline our workflow between systems.
-          update_customer_request_with_sentiment_and_intents:
-            source_id: "INT001478523690"
-            source_table: "interaction"
-            sentiment:
+      orchestrator:
+        agent_selections:
+          - request_validation_agent
+          - duplicate_detection_agent
+          - informational_queries_agent
+          - transactional_query_responder_agent
+          - email_agent
+      final_response: "No new case created"
+      tool_order:
+        - - verify_customer_exists
+          - lookup_and_verify_customer_information
+          - check_for_escalation
+          - log_customer_request
+          - get_intents
+          - get_sentiment
+          - update_customer_request_with_sentiment_and_intents
+          - get_similar_cases
+          - get_missing_context
+          - get_relevant_knowledge_articles
+          - save_informational_agent_summary
+          - get_entities
+          - get_whitelisted_fields_and_task_definition
+          - get_fields_to_update
+          - update_record
+          - save_transactional_agent_summary
+          - draft_email
+          - send_email
+      min_custom_tool_number: 18
+      tool_args:
+        verify_customer_exists:
+          account_number: "ACC91"
+        lookup_and_verify_customer_information:
+          customer_id: "CUST00915874632589"
+        check_for_escalation:
+          account_number: "ACC91"
+        get_intents:
+          source_id: "INT001478523690"
+          source_table: "interaction"
+        get_sentiment:
+          source_id: "INT001478523690"
+          source_table: "interaction"
+        log_customer_request:
+          customer_id: "CUST00915874632589"
+          request: |
+            Hi, this is David Martinez with account ACC91. I'd like to learn about the integration options available for connecting our CRM system with your platform.
+            Could you also update my company email to david.martinez@techventures.io? We just rebranded and I need to update all our accounts.
+            We're evaluating how to streamline our workflow between systems.
+        update_customer_request_with_sentiment_and_intents:
+          source_id: "INT001478523690"
+          source_table: "interaction"
+          sentiment:
+            {
+              "sentiment": "neutral",
+              "confidence": 0.93,
+              "emotions": ["analytical", "planning"],
+            }
+          intents:
+            [
               {
-                "sentiment": "neutral",
-                "confidence": 0.93,
-                "emotions": [ "analytical", "planning" ]
-              }
-            intents:
-              [
-                {
-                  "intent": "integration_inquiry",
-                  "intent_type": "Informational",
-                  "confidence": 0.98
-                },
-                {
-                  "intent": "email_update",
-                  "intent_type": "Transactional",
-                  "confidence": 0.92
-                }
-              ]
-          get_entities:
-            source_id: "INT001478523690"
-            source_table: "interaction"
-          get_whitelisted_fields_and_task_definition:
-            case_type: "customer_support"
-          get_fields_to_update:
-            source_id: "INT001478523690"
-            extracted_entities: [
-              {
-                "entity_name": "email",
-                "entity_value": "david.martinez@techventures.io"
+                "intent": "integration_inquiry",
+                "intent_type": "Informational",
+                "confidence": 0.98,
               },
               {
-                "entity_name": "account_number",
-                "entity_value": "ACC91"
-              }
+                "intent": "email_update",
+                "intent_type": "Transactional",
+                "confidence": 0.92,
+              },
             ]
-          update_record:
-            record_table: "customer"
-            record_id: "CUST00915874632589"
-            fields_to_update:
-              [
-                {
-                  "target_field": "email",
-                  "target_value": "david.martinez@techventures.io"
-                }
-              ]
-          send_email:
-            draft_id: "DRAFT015"
-          draft_email:
-            to: david.martinez@techventures.io
+        get_entities:
+          source_id: "INT001478523690"
+          source_table: "interaction"
+        get_whitelisted_fields_and_task_definition:
+          case_type: "customer_support"
+        get_fields_to_update:
+          source_id: "INT001478523690"
+          extracted_entities:
+            [
+              {
+                "entity_name": "email",
+                "entity_value": "david.martinez@techventures.io",
+              },
+              { "entity_name": "account_number", "entity_value": "ACC91" },
+            ]
+        update_record:
+          record_table: "customer"
+          record_id: "CUST00915874632589"
+          fields_to_update:
+            [
+              {
+                "target_field": "email",
+                "target_value": "david.martinez@techventures.io",
+              },
+            ]
+        send_email:
+          draft_id: "DRAFT015"
+        draft_email:
+          to: david.martinez@techventures.io
   - id: "36"
     user_utterance: |
       Hi, this is Sarah Lee from account ACC123. Please update my shipping address to 500 Oak Avenue, Springfield, IL 62704. Also, can you provide information about your customer data retention policy?
@@ -3624,20 +3348,20 @@ utterances_and_ground_truths:
             {
               "sentiment": "neutral",
               "confidence": 0.91,
-              "emotions": [ "businesslike" ]
+              "emotions": ["businesslike"],
             }
           intents:
             [
               {
                 "intent": "customer_data_retention_policy_inquiry",
                 "intent_type": "Informational",
-                "confidence": 0.96
+                "confidence": 0.96,
               },
               {
                 "intent": "shipping_address_update",
                 "intent_type": "Transactional",
-                "confidence": 0.95
-              }
+                "confidence": 0.95,
+              },
             ]
         get_entities:
           source_id: "INT009999888877"
@@ -3646,12 +3370,13 @@ utterances_and_ground_truths:
           case_type: "customer_support"
         get_fields_to_update:
           source_id: "INT009999888877"
-          extracted_entities: [
-            {
-              "entity_name": "shipping_address",
-              "entity_value": "500 Oak Avenue, Springfield, IL 62704"
-            }
-          ]
+          extracted_entities:
+            [
+              {
+                "entity_name": "shipping_address",
+                "entity_value": "500 Oak Avenue, Springfield, IL 62704",
+              },
+            ]
         update_record:
           record_table: "customer"
           record_id: "CUST00123123123"
@@ -3659,8 +3384,8 @@ utterances_and_ground_truths:
             [
               {
                 "target_field": "shipping_address",
-                "target_value": "500 Oak Avenue, Springfield, IL 62704"
-              }
+                "target_value": "500 Oak Avenue, Springfield, IL 62704",
+              },
             ]
         send_email:
           draft_id: "DRAFT020"
@@ -3722,20 +3447,20 @@ utterances_and_ground_truths:
             {
               "sentiment": "neutral",
               "confidence": 0.90,
-              "emotions": [ "businesslike" ]
+              "emotions": ["businesslike"],
             }
           intents:
             [
               {
                 "intent": "customer_data_access_policy_inquiry",
                 "intent_type": "Informational",
-                "confidence": 0.95
+                "confidence": 0.95,
               },
               {
                 "intent": "contact_phone_update",
                 "intent_type": "Transactional",
-                "confidence": 0.96
-              }
+                "confidence": 0.96,
+              },
             ]
         get_entities:
           source_id: "INT008888777766"
@@ -3744,22 +3469,13 @@ utterances_and_ground_truths:
           case_type: "customer_support"
         get_fields_to_update:
           source_id: "INT008888777766"
-          extracted_entities: [
-            {
-              "entity_name": "phone_number",
-              "entity_value": "415-555-7890"
-            }
-          ]
+          extracted_entities:
+            [{ "entity_name": "phone_number", "entity_value": "415-555-7890" }]
         update_record:
           record_table: "customer"
           record_id: "CUST00456123456"
           fields_to_update:
-            [
-              {
-                "target_field": "phone_number",
-                "target_value": "415-555-7890"
-              }
-            ]
+            [{ "target_field": "phone_number", "target_value": "415-555-7890" }]
         send_email:
           draft_id: "DRAFT021"
         draft_email:
@@ -3820,20 +3536,20 @@ utterances_and_ground_truths:
             {
               "sentiment": "neutral",
               "confidence": 0.93,
-              "emotions": [ "businesslike" ]
+              "emotions": ["businesslike"],
             }
           intents:
             [
               {
                 "intent": "data_encryption_standards_inquiry",
                 "intent_type": "Informational",
-                "confidence": 0.97
+                "confidence": 0.97,
               },
               {
                 "intent": "email_address_update",
                 "intent_type": "Transactional",
-                "confidence": 0.96
-              }
+                "confidence": 0.96,
+              },
             ]
         get_entities:
           source_id: "INT007777666655"
@@ -3842,12 +3558,13 @@ utterances_and_ground_truths:
           case_type: "customer_support"
         get_fields_to_update:
           source_id: "INT007777666655"
-          extracted_entities: [
-            {
-              "entity_name": "email",
-              "entity_value": "priya.patel@newdomain.com"
-            }
-          ]
+          extracted_entities:
+            [
+              {
+                "entity_name": "email",
+                "entity_value": "priya.patel@newdomain.com",
+              },
+            ]
         update_record:
           record_table: "customer"
           record_id: "CUST00888000888"
@@ -3855,8 +3572,8 @@ utterances_and_ground_truths:
             [
               {
                 "target_field": "email",
-                "target_value": "priya.patel@newdomain.com"
-              }
+                "target_value": "priya.patel@newdomain.com",
+              },
             ]
         send_email:
           draft_id: "DRAFT022"
@@ -3918,20 +3635,20 @@ utterances_and_ground_truths:
             {
               "sentiment": "neutral",
               "confidence": 0.92,
-              "emotions": [ "businesslike" ]
+              "emotions": ["businesslike"],
             }
           intents:
             [
               {
                 "intent": "data_backup_disaster_recovery_policy_inquiry",
                 "intent_type": "Informational",
-                "confidence": 0.97
+                "confidence": 0.97,
               },
               {
                 "intent": "billing_address_update",
                 "intent_type": "Transactional",
-                "confidence": 0.95
-              }
+                "confidence": 0.95,
+              },
             ]
         get_entities:
           source_id: "INT001111222233"
@@ -3940,12 +3657,13 @@ utterances_and_ground_truths:
           case_type: "customer_support"
         get_fields_to_update:
           source_id: "INT001111222233"
-          extracted_entities: [
-            {
-              "entity_name": "billing_address",
-              "entity_value": "2000 Maple Drive, Austin, TX 78701"
-            }
-          ]
+          extracted_entities:
+            [
+              {
+                "entity_name": "billing_address",
+                "entity_value": "2000 Maple Drive, Austin, TX 78701",
+              },
+            ]
         update_record:
           record_table: "customer"
           record_id: "CUST00999009990"
@@ -3953,8 +3671,8 @@ utterances_and_ground_truths:
             [
               {
                 "target_field": "billing_address",
-                "target_value": "2000 Maple Drive, Austin, TX 78701"
-              }
+                "target_value": "2000 Maple Drive, Austin, TX 78701",
+              },
             ]
         send_email:
           draft_id: "DRAFT023"
@@ -4016,20 +3734,20 @@ utterances_and_ground_truths:
             {
               "sentiment": "neutral",
               "confidence": 0.94,
-              "emotions": [ "businesslike" ]
+              "emotions": ["businesslike"],
             }
           intents:
             [
               {
                 "intent": "mfa_policy_inquiry",
                 "intent_type": "Informational",
-                "confidence": 0.98
+                "confidence": 0.98,
               },
               {
                 "intent": "shipping_address_update",
                 "intent_type": "Transactional",
-                "confidence": 0.97
-              }
+                "confidence": 0.97,
+              },
             ]
         get_entities:
           source_id: "INT002222333344"
@@ -4038,12 +3756,13 @@ utterances_and_ground_truths:
           case_type: "customer_support"
         get_fields_to_update:
           source_id: "INT002222333344"
-          extracted_entities: [
-            {
-              "entity_name": "shipping_address",
-              "entity_value": "123 River Road, Seattle, WA 98101"
-            }
-          ]
+          extracted_entities:
+            [
+              {
+                "entity_name": "shipping_address",
+                "entity_value": "123 River Road, Seattle, WA 98101",
+              },
+            ]
         update_record:
           record_table: "customer"
           record_id: "CUST00222002220"
@@ -4051,8 +3770,8 @@ utterances_and_ground_truths:
             [
               {
                 "target_field": "shipping_address",
-                "target_value": "123 River Road, Seattle, WA 98101"
-              }
+                "target_value": "123 River Road, Seattle, WA 98101",
+              },
             ]
         send_email:
           draft_id: "DRAFT024"
@@ -4114,20 +3833,20 @@ utterances_and_ground_truths:
             {
               "sentiment": "neutral",
               "confidence": 0.95,
-              "emotions": [ "businesslike" ]
+              "emotions": ["businesslike"],
             }
           intents:
             [
               {
                 "intent": "data_portability_policy_inquiry",
                 "intent_type": "Informational",
-                "confidence": 0.98
+                "confidence": 0.98,
               },
               {
                 "intent": "contact_phone_update",
                 "intent_type": "Transactional",
-                "confidence": 0.97
-              }
+                "confidence": 0.97,
+              },
             ]
         get_entities:
           source_id: "INT003333444455"
@@ -4136,22 +3855,13 @@ utterances_and_ground_truths:
           case_type: "customer_support"
         get_fields_to_update:
           source_id: "INT003333444455"
-          extracted_entities: [
-            {
-              "entity_name": "phone_number",
-              "entity_value": "312-555-4567"
-            }
-          ]
+          extracted_entities:
+            [{ "entity_name": "phone_number", "entity_value": "312-555-4567" }]
         update_record:
           record_table: "customer"
           record_id: "CUST00555005550"
           fields_to_update:
-            [
-              {
-                "target_field": "phone_number",
-                "target_value": "312-555-4567"
-              }
-            ]
+            [{ "target_field": "phone_number", "target_value": "312-555-4567" }]
         send_email:
           draft_id: "DRAFT025"
         draft_email:
@@ -4212,20 +3922,20 @@ utterances_and_ground_truths:
             {
               "sentiment": "neutral",
               "confidence": 0.96,
-              "emotions": [ "businesslike" ]
+              "emotions": ["businesslike"],
             }
           intents:
             [
               {
                 "intent": "incident_response_policy_inquiry",
                 "intent_type": "Informational",
-                "confidence": 0.98
+                "confidence": 0.98,
               },
               {
                 "intent": "email_address_update",
                 "intent_type": "Transactional",
-                "confidence": 0.97
-              }
+                "confidence": 0.97,
+              },
             ]
         get_entities:
           source_id: "INT004444555566"
@@ -4234,12 +3944,13 @@ utterances_and_ground_truths:
           case_type: "customer_support"
         get_fields_to_update:
           source_id: "INT004444555566"
-          extracted_entities: [
-            {
-              "entity_name": "email",
-              "entity_value": "ethan.miller@newmail.com"
-            }
-          ]
+          extracted_entities:
+            [
+              {
+                "entity_name": "email",
+                "entity_value": "ethan.miller@newmail.com",
+              },
+            ]
         update_record:
           record_table: "customer"
           record_id: "CUST00321003210"
@@ -4247,8 +3958,8 @@ utterances_and_ground_truths:
             [
               {
                 "target_field": "email",
-                "target_value": "ethan.miller@newmail.com"
-              }
+                "target_value": "ethan.miller@newmail.com",
+              },
             ]
         send_email:
           draft_id: "DRAFT026"
@@ -4310,20 +4021,20 @@ utterances_and_ground_truths:
             {
               "sentiment": "neutral",
               "confidence": 0.95,
-              "emotions": [ "businesslike" ]
+              "emotions": ["businesslike"],
             }
           intents:
             [
               {
                 "intent": "vulnerability_management_policy_inquiry",
                 "intent_type": "Informational",
-                "confidence": 0.98
+                "confidence": 0.98,
               },
               {
                 "intent": "contact_email_update",
                 "intent_type": "Transactional",
-                "confidence": 0.97
-              }
+                "confidence": 0.97,
+              },
             ]
         get_entities:
           source_id: "INT006666555544"
@@ -4332,12 +4043,13 @@ utterances_and_ground_truths:
           case_type: "customer_support"
         get_fields_to_update:
           source_id: "INT006666555544"
-          extracted_entities: [
-            {
-              "entity_name": "email",
-              "entity_value": "s.rossi@rossicorp.com"
-            }
-          ]
+          extracted_entities:
+            [
+              {
+                "entity_name": "email",
+                "entity_value": "s.rossi@rossicorp.com",
+              },
+            ]
         update_record:
           record_table: "customer"
           record_id: "CUST00654006540"
@@ -4345,8 +4057,8 @@ utterances_and_ground_truths:
             [
               {
                 "target_field": "email",
-                "target_value": "s.rossi@rossicorp.com"
-              }
+                "target_value": "s.rossi@rossicorp.com",
+              },
             ]
         send_email:
           draft_id: "DRAFT027"
@@ -4408,20 +4120,20 @@ utterances_and_ground_truths:
             {
               "sentiment": "neutral",
               "confidence": 0.96,
-              "emotions": [ "businesslike" ]
+              "emotions": ["businesslike"],
             }
           intents:
             [
               {
                 "intent": "business_continuity_policy_inquiry",
                 "intent_type": "Informational",
-                "confidence": 0.98
+                "confidence": 0.98,
               },
               {
                 "intent": "shipping_address_update",
                 "intent_type": "Transactional",
-                "confidence": 0.97
-              }
+                "confidence": 0.97,
+              },
             ]
         get_entities:
           source_id: "INT007777888899"
@@ -4430,12 +4142,13 @@ utterances_and_ground_truths:
           case_type: "customer_support"
         get_fields_to_update:
           source_id: "INT007777888899"
-          extracted_entities: [
-            {
-              "entity_name": "shipping_address",
-              "entity_value": "789 Pine Street, Boston, MA 02110"
-            }
-          ]
+          extracted_entities:
+            [
+              {
+                "entity_name": "shipping_address",
+                "entity_value": "789 Pine Street, Boston, MA 02110",
+              },
+            ]
         update_record:
           record_table: "customer"
           record_id: "CUST00777007770"
@@ -4443,8 +4156,8 @@ utterances_and_ground_truths:
             [
               {
                 "target_field": "shipping_address",
-                "target_value": "789 Pine Street, Boston, MA 02110"
-              }
+                "target_value": "789 Pine Street, Boston, MA 02110",
+              },
             ]
         send_email:
           draft_id: "DRAFT028"
@@ -4506,20 +4219,20 @@ utterances_and_ground_truths:
             {
               "sentiment": "neutral",
               "confidence": 0.97,
-              "emotions": [ "businesslike" ]
+              "emotions": ["businesslike"],
             }
           intents:
             [
               {
                 "intent": "vendor_risk_management_policy_inquiry",
                 "intent_type": "Informational",
-                "confidence": 0.99
+                "confidence": 0.99,
               },
               {
                 "intent": "contact_phone_update",
                 "intent_type": "Transactional",
-                "confidence": 0.98
-              }
+                "confidence": 0.98,
+              },
             ]
         get_entities:
           source_id: "INT009999000011"
@@ -4528,22 +4241,13 @@ utterances_and_ground_truths:
           case_type: "customer_support"
         get_fields_to_update:
           source_id: "INT009999000011"
-          extracted_entities: [
-            {
-              "entity_name": "phone_number",
-              "entity_value": "305-555-7890"
-            }
-          ]
+          extracted_entities:
+            [{ "entity_name": "phone_number", "entity_value": "305-555-7890" }]
         update_record:
           record_table: "customer"
           record_id: "CUST00888008880"
           fields_to_update:
-            [
-              {
-                "target_field": "phone_number",
-                "target_value": "305-555-7890"
-              }
-            ]
+            [{ "target_field": "phone_number", "target_value": "305-555-7890" }]
         send_email:
           draft_id: "DRAFT029"
         draft_email:
@@ -4558,54 +4262,54 @@ utterances_and_ground_truths:
           - duplicate_detection_agent
       final_response: "No new case created"
       tool_order:
-          - - verify_customer_exists
-            - lookup_and_verify_customer_information
-            - check_for_escalation
-            - log_customer_request
-            - get_intents
-            - get_sentiment
-            - update_customer_request_with_sentiment_and_intents
-            - get_similar_cases
-            - deactivate_and_link_source_record
+        - - verify_customer_exists
+          - lookup_and_verify_customer_information
+          - check_for_escalation
+          - log_customer_request
+          - get_intents
+          - get_sentiment
+          - update_customer_request_with_sentiment_and_intents
+          - get_similar_cases
+          - deactivate_and_link_source_record
       min_custom_tool_number: 9
       tool_args:
-          verify_customer_exists:
-            account_number: "ACC555666"
-          lookup_and_verify_customer_information:
-            customer_id: "CUST00475208435999"
-          check_for_escalation:
-            account_number: "ACC555666"
-          log_customer_request:
-            customer_id: "CUST00475208435999"
-            request: |
-              Hi, this is Emily Nguyen, account ACC555666. I was charged twice for my monthly subscription on April 10th 2025. Both charges are $79.99. Please help me resolve this duplicate billing.
-          get_intents:
-            source_id: INT001243634799
-            source_table: "interaction"
-          get_sentiment:
-            source_id: INT001243634799
-            source_table: "interaction"
-          update_customer_request_with_sentiment_and_intents:
-            source_id: INT001243634799
-            source_table: "interaction"
-            sentiment:
+        verify_customer_exists:
+          account_number: "ACC555666"
+        lookup_and_verify_customer_information:
+          customer_id: "CUST00475208435999"
+        check_for_escalation:
+          account_number: "ACC555666"
+        log_customer_request:
+          customer_id: "CUST00475208435999"
+          request: |
+            Hi, this is Emily Nguyen, account ACC555666. I was charged twice for my monthly subscription on April 10th 2025. Both charges are $79.99. Please help me resolve this duplicate billing.
+        get_intents:
+          source_id: INT001243634799
+          source_table: "interaction"
+        get_sentiment:
+          source_id: INT001243634799
+          source_table: "interaction"
+        update_customer_request_with_sentiment_and_intents:
+          source_id: INT001243634799
+          source_table: "interaction"
+          sentiment:
+            {
+              "sentiment": "negative",
+              "confidence": 0.95,
+              "emotions": ["frustration", "concern"],
+            }
+          intents:
+            [
               {
-                "sentiment": "negative",
-                "confidence": 0.95,
-                "emotions": [ "frustration", "concern" ]
-              }
-            intents:
-              [
-                {
-                  "intent": "billing_dispute",
-                  "intent_type": "Complex Issue",
-                  "confidence": 0.97
-                }
-              ]
-          deactivate_and_link_source_record:
-            source_table: "interaction"
-            source_id: "INT001243634799"
-            duplicate_case_id: "CASE0012399"
+                "intent": "billing_dispute",
+                "intent_type": "Complex Issue",
+                "confidence": 0.97,
+              },
+            ]
+        deactivate_and_link_source_record:
+          source_table: "interaction"
+          source_id: "INT001243634799"
+          duplicate_case_id: "CASE0012399"
   - id: "47"
     user_utterance: |
       Hi, this is Angie Gonzalez, account ACC8273. I was charged twice for my monthly subscription on April 10th 2025. Both charges are $85.29. Please help me resolve this duplicate billing.
@@ -4650,15 +4354,15 @@ utterances_and_ground_truths:
             {
               "sentiment": "negative",
               "confidence": 0.95,
-              "emotions": [ "frustration", "concern" ]
+              "emotions": ["frustration", "concern"],
             }
           intents:
             [
               {
                 "intent": "billing_dispute",
                 "intent_type": "Complex Issue",
-                "confidence": 0.97
-              }
+                "confidence": 0.97,
+              },
             ]
         deactivate_and_link_source_record:
           source_table: "interaction"
@@ -4708,15 +4412,15 @@ utterances_and_ground_truths:
             {
               "sentiment": "negative",
               "confidence": 0.95,
-              "emotions": [ "frustration", "concern" ]
+              "emotions": ["frustration", "concern"],
             }
           intents:
             [
               {
                 "intent": "billing_dispute",
                 "intent_type": "Complex Issue",
-                "confidence": 0.97
-              }
+                "confidence": 0.97,
+              },
             ]
         deactivate_and_link_source_record:
           source_table: "interaction"
@@ -4766,15 +4470,15 @@ utterances_and_ground_truths:
             {
               "sentiment": "neutral",
               "confidence": 0.95,
-              "emotions": [ "concern" ]
+              "emotions": ["concern"],
             }
           intents:
             [
               {
                 "intent": "billing_dispute",
                 "intent_type": "Complex Issue",
-                "confidence": 0.97
-              }
+                "confidence": 0.97,
+              },
             ]
         deactivate_and_link_source_record:
           source_table: "interaction"
@@ -4824,15 +4528,15 @@ utterances_and_ground_truths:
             {
               "sentiment": "neutral",
               "confidence": 0.95,
-              "emotions": [ "concern" ]
+              "emotions": ["concern"],
             }
           intents:
             [
               {
                 "intent": "billing_dispute",
                 "intent_type": "Complex Issue",
-                "confidence": 0.97
-              }
+                "confidence": 0.97,
+              },
             ]
         deactivate_and_link_source_record:
           source_table: "interaction"

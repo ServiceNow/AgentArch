@@ -2,7 +2,6 @@ from typing import Any
 
 from pydantic import BaseModel
 
-
 ERROR_MAP: dict[int, str] = {
     429: "rate_limit",
     599: "connection_error",

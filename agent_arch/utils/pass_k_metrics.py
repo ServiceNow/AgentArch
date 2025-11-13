@@ -22,7 +22,9 @@ class PassAtKMetrics:
         if n <= 0 or c < 0 or k <= 0:
             raise ValueError("n and k must be positive, c must be non-negative")
         if c > n:
-            raise ValueError("Number of correct solutions (c) cannot exceed total attempts (n)")
+            raise ValueError(
+                "Number of correct solutions (c) cannot exceed total attempts (n)"
+            )
         if k > n:
             raise ValueError("Sample size (k) cannot exceed total attempts (n)")
 
