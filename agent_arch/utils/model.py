@@ -41,8 +41,8 @@ class Model:
                 chat_completion = await acompletion(
                     model=f"{provider}/{model_name}",
                     messages=messages,
-                    tools=tools,
-                    tool_choice="auto",
+                    **({"tools": tools} if tools else {}),
+                    **({"tool_choice": "auto"} if tools else {}),
                     **({"allowed_openai_params": ["reasoning_effort"]} if "gpt-oss" in model_name else {}),
                     **({"allowed_openai_params": ["tools", "tool_choice"]} if "bedrock" in provider else {}),
                     **({"vertex_credentials": vertex_credentials_json} if provider == "vertex_ai" else {}),

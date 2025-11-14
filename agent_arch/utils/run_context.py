@@ -80,7 +80,10 @@ class RunContext:
                 if isinstance(content_data, dict):
                     tool_name = content_data.get("tool_name", "")
                     tool_result = content_data.get("tool_result", {})
-                    message = tool_result.get("message")
+                    if isinstance(tool_result, dict):
+                        message = tool_result.get("message")
+                    else:
+                        message = None
 
                     if (
                         tool_name == "finish"

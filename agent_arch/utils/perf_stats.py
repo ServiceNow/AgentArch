@@ -54,7 +54,7 @@ class PerfStats:
                 try:
                     np_values = np.array(values)
                 except Exception as e:
-                    print(f"Error converting {values} for {metric} ({model}): {e}")
+                    # print(f"Error converting {values} for {metric} ({model}): {e}")
                     continue
                 np_values = np_values[np_values != np.array(None)]
                 if len(np_values) == 0:

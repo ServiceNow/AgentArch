@@ -537,9 +537,7 @@ if __name__ == "__main__":
         choices=[
             "direct",
             "indirect",
-            "single_agent",
-            "single_agent_RAG_tool_curation",
-            "single_agent_LLM_tool_curation",
+            "single_agent"
         ],
         required=True,
         default="direct",
