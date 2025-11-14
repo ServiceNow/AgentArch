@@ -214,7 +214,6 @@ async def process_record(
 
 
 def get_records(records, k):
-    records = records[:2]
     if k == 1:
         return records
     augmented_records = []
