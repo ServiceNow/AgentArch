@@ -80,6 +80,13 @@ if [ "${DEBUG}" = "true" ] || [ "${DEBUG}" = "True" ] || [ "${DEBUG}" = "1" ]; t
     echo "🐛 Debug mode enabled"\n\
 fi\n\
 \n\
+# Check if K is set and prepare pass_k flag\n\
+PASS_K_FLAG=""\n\
+if [ -n "$K" ]; then\n\
+    PASS_K_FLAG="--pass_k $K"\n\
+    echo "📊 Pass K set to: $K"\n\
+fi\n\
+\n\
 TOTAL_CONFIGS=0\n\
 SUCCESSFUL_CONFIGS=0\n\
 FAILED_CONFIGS=0\n\
@@ -119,7 +126,8 @@ for usecase in "${USECASES[@]}"; do\n\
                     --memory_management "$memory_type" \\\n\
                     --project "$PROJECT" \\\n\
                     --directory /app/agent_arch \\\n\
-                    $DEBUG_FLAG\n\
+                    $DEBUG_FLAG \\\n\
+                    $PASS_K_FLAG\n\
                 \n\
                 if [ $? -eq 0 ]; then\n\
                     echo "✅ Configuration completed successfully"\n\
@@ -150,7 +158,8 @@ for usecase in "${USECASES[@]}"; do\n\
                     --thinking-tools-enabled \\\n\
                     --project "$PROJECT" \\\n\
                     --directory /app/agent_arch \\\n\
-                    $DEBUG_FLAG\n\
+                    $DEBUG_FLAG \\\n\
+                    $PASS_K_FLAG\n\
                 \n\
                 if [ $? -eq 0 ]; then\n\
                     echo "✅ Configuration completed successfully"\n\
