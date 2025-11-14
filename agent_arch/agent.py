@@ -8,11 +8,9 @@ import dotenv
 from agent_arch.tools import base_agent_tools
 from agent_arch.tools.tool_registry import TOOL_REGISTRY, load_and_register_tools
 from agent_arch.utils.constants import BUILT_IN_TOOLS, THINKING_TOOLS
-from agent_arch.utils.json_utils import extract_and_load_json
-from agent_arch.utils.models import model_call
+from agent_arch.utils.model import model_call
 from agent_arch.utils.run_context import RunContext
 from agent_arch.utils.util import (
-    add_tool_call_requests_to_messages,
     assign_tool_call_ids,
     get_agents_as_tools,
     load_json_file,
@@ -149,12 +147,10 @@ class BaseAgent:
             "function": {
                 "name": "",
                 "description": "",
-                "strict": True,
                 "parameters": {
                     "type": "object",
                     "properties": {},
                     "required": [],
-                    "additionalProperties": False,
                 },
             },
         }
@@ -309,14 +305,8 @@ class BaseAgent:
             tool_calls = assign_tool_call_ids(tool_calls)
 
             # Add assistant response once
-            # messages.append(model_response.raw_response_object.choices[0].message)
             if self.agent_type == "function_calling":
-                messages = add_tool_call_requests_to_messages(
-                    self.model_config["model_family"],
-                    model_response,
-                    messages,
-                    tool_calls,
-                )
+                messages.append(model_response.raw_response_object.choices[0].message)
 
             tool_messages = []
             for tool_call in tool_calls:

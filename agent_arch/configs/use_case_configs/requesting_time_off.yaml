@@ -1513,7 +1513,7 @@ utterances_and_ground_truths:
           employee_id: ANGK45863ML
 
   - id: "41"
-    user_utterance: hello, i'm marcus rodriguez and i want to take the entire month of february and march off this year in 2024
+    user_utterance: hello, i'm marcus rodriguez and i want to take the entire month of february and march off this year in 2024 to go on a long vacation
     ground_truth:
       orchestrator:
         agent_selections:
@@ -1565,7 +1565,7 @@ utterances_and_ground_truths:
           employee_id: JENC92847ZK
 
   - id: "43"
-    user_utterance: good morning, david thompson speaking. i want to take off from the second day of february through the end of march 2024
+    user_utterance: good morning, david thompson speaking. i want to take off from the second day of february through the end of march 2024 for vacation
     ground_truth:
       orchestrator:
         agent_selections:
@@ -1643,7 +1643,7 @@ utterances_and_ground_truths:
           employee_id: ROBW67394RS
 
   - id: "46"
-    user_utterance: hello, lisa garcia speaking. i'd like to request time off from february 10th through april 2nd 2024
+    user_utterance: hello, lisa garcia speaking. i'd like to request time off from february 10th through april 2nd 2024 for holiday
     ground_truth:
       orchestrator:
         agent_selections:
@@ -1747,7 +1747,7 @@ utterances_and_ground_truths:
           employee_id: KEVM74951ZA
 
   - id: "50"
-    user_utterance: hi, this is rachel taylor. i want to request leave from feb 3rd 2024 through march 18th 2024
+    user_utterance: hi, this is rachel taylor. i want to request vacation leave from feb 3rd 2024 through march 18th 2024
     ground_truth:
       orchestrator:
         agent_selections:
@@ -1773,7 +1773,7 @@ utterances_and_ground_truths:
           employee_id: RACT59237BC
 
   - id: "51"
-    user_utterance: good morning, james anderson here. i need to take time off from february 25th 2024 to april 5th 2024
+    user_utterance: good morning, james anderson here. i need to take time off from february 25th 2024 to april 5th 2024 for a holiday
     ground_truth:
       orchestrator:
         agent_selections:

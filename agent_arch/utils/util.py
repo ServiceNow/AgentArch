@@ -9,7 +9,6 @@ import uuid
 
 import pandas as pd
 import yaml
-from google.genai.types import Part
 from agent_arch.utils.json_utils import extract_and_load_json
 from agent_arch.utils.perf_stats import PerfStats
 
@@ -88,7 +87,6 @@ def get_agents_as_tools(usecase_config: dict) -> list:
                         }
                     },
                     "required": ["main_objective"],
-                    "additionalProperties": False,
                 },
             },
         }
@@ -98,38 +96,6 @@ def get_agents_as_tools(usecase_config: dict) -> list:
 
 def clean_id(raw_id: str) -> str:
     return raw_id.split("_")[0]
-
-
-def add_tool_call_requests_to_messages(
-    model_family, model_response, messages, tool_call_requests
-):
-    if "openai" in model_family or "qwen" in model_family:
-        messages.append(model_response.raw_response_object.choices[0].message)
-    elif "gemini" in model_family:
-        function_call_parts = [
-            Part.from_function_call(
-                name=tool_call["function"]["name"],
-                args=json.loads(tool_call["function"]["arguments"]),
-            )
-            for tool_call in tool_call_requests
-        ]
-
-        model_tool_call_message = {"role": "model", "parts": function_call_parts}
-        messages.append(model_tool_call_message)
-    elif "anthropic" in model_family:
-        tool_use_contents = [
-            {
-                "toolUse": {
-                    "toolUseId": tool_call["id"],
-                    "name": tool_call["function"]["name"],
-                    "input": json.loads(tool_call["function"]["arguments"]),
-                }
-            }
-            for tool_call in tool_call_requests
-        ]
-
-        messages.append({"role": "assistant", "content": tool_use_contents})
-    return messages
 
 
 def get_registerable_tool_names_from_usecase(usecase_config: dict) -> dict:

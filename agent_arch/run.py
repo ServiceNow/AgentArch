@@ -9,19 +9,18 @@ from datetime import datetime
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 if not os.getenv("DIRECTORY"):
     os.environ["DIRECTORY"] = BASE_DIR
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.path.join(
-    os.environ["DIRECTORY"], "google_credentials.json"
+os.environ["VERTEX_APPLICATION_CREDENTIALS"] = os.path.join(
+    os.environ["DIRECTORY"], "vertex_credentials.json"
 )
 
 
 from agent_arch.agent import AGENT_REGISTRY, AgentRegistry, BaseAgent
 from agent_arch.metrics import compute_overall_scores, run_metrics
-from agent_arch.utils.models import get_model_info, model_call
+from agent_arch.utils.model import model_call, get_model_info
 from agent_arch.utils.perf_stats import PerfStats
 from agent_arch.utils.run_context import RunContext
 from agent_arch.utils.util import (
     add_existing_perf_stats_to_current_session,
-    add_tool_call_requests_to_messages,
     assign_tool_call_ids,
     collect_existing_perf_stats,
     copy_perf_stats_files,
@@ -194,12 +193,7 @@ async def process_record(
                             "content": finish_message,
                         }
                     )
-                messages = add_tool_call_requests_to_messages(
-                    model_config["model_family"],
-                    model_response,
-                    messages,
-                    agent_selections,
-                )
+                messages.append(model_response.raw_response_object.choices[0].message)
                 messages.extend(tool_result_messages)
         iterations += 1
 
