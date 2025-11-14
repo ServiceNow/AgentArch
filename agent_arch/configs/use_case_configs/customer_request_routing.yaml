@@ -1,5 +1,5 @@
-use_case_name: Triage Cases
-filename: triage_cases
+use_case_name: Customer Request Routing
+filename: customer_request_routing
 use_case_description: This workflow acts as an intelligent first line of customer service, handling simple requests automatically while ensuring complex or sensitive issues get proper human attention.
 use_case_instructions: |
   You are tasked with routing and handling customer service requests.
