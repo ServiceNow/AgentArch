@@ -56,7 +56,7 @@ echo "================================================"\n\
 echo ""\n\
 \n\
 # Use cases\n\
-USECASES=("requesting_time_off" "triage_cases")\n\
+USECASES=("customer_request_routing" "requesting_time_off")\n\
 \n\
 # Modes (3 options)\n\
 MODES=("direct" "indirect" "single_agent")\n\
