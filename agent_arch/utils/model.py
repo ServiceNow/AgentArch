@@ -49,18 +49,17 @@ class Model:
                     **model_parameters
                 )
             else:
-                client = AsyncOpenAI(
+                async with AsyncOpenAI(
                     base_url=model_config["endpoint"],
                     api_key=model_config["api_key"]
-                )
-
-                chat_completion = await client.chat.completions.create(
-                    model=model_name,
-                    messages=messages,
-                    tools=tools,
-                    tool_choice="auto",
-                    **model_parameters
-                )
+                ) as client:
+                    chat_completion = await client.chat.completions.create(
+                        model=model_name,
+                        messages=messages,
+                        tools=tools,
+                        tool_choice="auto",
+                        **model_parameters
+                    )
 
             call_end_time = time.time()
 

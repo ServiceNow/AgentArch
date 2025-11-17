@@ -108,3 +108,11 @@ class RunContext:
         :return: Memory
         """
         return self.memories.get(record_number, [])
+
+    def reset(self) -> None:
+        """
+        Reset all stored data. Useful when running multiple experiments sequentially.
+        """
+        self.traces.clear()
+        self.memories.clear()
+        self.step_counter.clear()

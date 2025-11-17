@@ -269,6 +269,10 @@ async def main(
     memory_type: str,
     directory: str,
 ):
+    # Reset singletons at the start of each run to prevent state pollution
+    run_context.reset()
+    PerfStats().clear()
+    
     if not directory:
         directory = os.getenv("DIRECTORY")
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
