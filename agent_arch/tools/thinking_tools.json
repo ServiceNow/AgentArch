@@ -29,7 +29,7 @@
             "description": "Describe the math problem, describe your thinking process, and then describe the solution you arrive at."
           }
         },
-        "required": ["message"]
+        "required": ["input"]
       }
     }
   }

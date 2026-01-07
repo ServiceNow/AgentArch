@@ -3,8 +3,10 @@ import asyncio
 import csv
 import json
 import os
+import sys
 import time
 from datetime import datetime
+from tqdm import tqdm
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 if not os.getenv("DIRECTORY"):
@@ -115,6 +117,10 @@ async def process_record(
                 tool_choice="auto" if agent_type == "function_calling" else None,
             )
 
+            if model_response.is_failure:
+                continue_loop = False
+                break
+
             response_message = model_response.llm_response
             if agent_type == "function_calling":
                 agent_selections = model_response.tool_calls
@@ -146,6 +152,7 @@ async def process_record(
                     }
                     for agent in agent_selections
                 ]
+                print(json.dumps(orchestrator_content))
                 run_context.add_message_to_trace(
                     record_number=record_id,
                     agent_name="orchestrator",
@@ -238,22 +245,26 @@ async def run_in_batches(
     batch_size = int(os.getenv("BATCH_SIZE", 70))
     print(f"Running in batches of {batch_size}")
     results = []
-    for i in range(0, len(records), batch_size):
-        batch = records[i : i + batch_size]
-        tasks = [
-            process_record(
-                record,
-                usecase_config,
-                model_config,
-                mode,
-                thinking_tools_enabled,
-                agent_type,
-                memory_type,
-            )
-            for record in batch
-        ]
-        batch_results = await asyncio.gather(*tasks)
-        results.extend(batch_results)
+    with tqdm(total=len(records), desc="Processing records") as pbar:
+        for i in range(0, len(records), batch_size):
+            batch = records[i : i + batch_size]
+            tasks = [
+                process_record(
+                    record,
+                    usecase_config,
+                    model_config,
+                    mode,
+                    thinking_tools_enabled,
+                    agent_type,
+                    memory_type,
+                )
+                for record in batch
+            ]
+            # Update progress bar as each task completes
+            for coro in asyncio.as_completed(tasks):
+                result = await coro
+                results.append(result)
+                pbar.update(1)
     return results
 
 
@@ -269,38 +280,15 @@ async def main(
     memory_type: str,
     directory: str,
 ):
-    # Reset singletons at the start of each run to prevent state pollution
-    run_context.reset()
-    PerfStats().clear()
-    
-    if not directory:
-        directory = os.getenv("DIRECTORY")
-    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    results_dir = os.path.join(
-        directory,
-        "results",
-        project,
-        usecase,
-        model,
-        mode,
-        "thinking_enabled" if thinking_tools_enabled else "no_thinking",
-        agent_type,
-        memory_type,
-        timestamp,
-    )
-    os.makedirs(results_dir, exist_ok=True)
+    try:
+        # Reset singletons at the start of each run to prevent state pollution
+        run_context.reset()
+        PerfStats().clear()
 
-    model_config = get_model_info(model)
-    usecase_config = load_yaml_file(
-        f"{directory}/configs/use_case_configs/{usecase}.yaml"
-    )
-
-    RERUN_METRICS = os.getenv("RERUN_METRICS", False)
-    RERUN_ERROR_RECORDS = os.getenv("RERUN_ERROR_RECORDS", False)
-    results = []
-    if RERUN_METRICS or RERUN_ERROR_RECORDS:
-        print(f"🔄 RERUN enabled - looking for existing results to re-run metrics on")
-        results_dir_pattern = os.path.join(
+        if not directory:
+            directory = os.getenv("DIRECTORY")
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        results_dir = os.path.join(
             directory,
             "results",
             project,
@@ -310,225 +298,256 @@ async def main(
             "thinking_enabled" if thinking_tools_enabled else "no_thinking",
             agent_type,
             memory_type,
+            timestamp,
         )
-        previous_run_dir = find_most_recent_matching_run(results_dir_pattern, timestamp)
+        os.makedirs(results_dir, exist_ok=True)
 
-        if not previous_run_dir:
-            print(
-                "❌ No previous run found with matching configuration! Try running regularly"
-            )
-            print(f"   Looked in: {results_dir_pattern}")
-            return
-        print(f"✅ Found previous run: {previous_run_dir}")
-        if RERUN_ERROR_RECORDS:
-            try:
-                # ids_of_records_to_rerun is set of ids that need to be rerun
-                model_config = json.loads(os.getenv(f"{model.upper()}_CONFIG"))
-                ids_of_records_to_rerun = get_records_to_rerun(
-                    previous_run_dir, model_config["name"]
-                )
-                print(
-                    f"📊 {len(ids_of_records_to_rerun)} records from previous run need to be rerun"
-                )
+        model_config = get_model_info(model)
+        usecase_config = load_yaml_file(
+            f"{directory}/configs/use_case_configs/{usecase}.yaml"
+        )
 
-                existing_results = load_existing_results(previous_run_dir)
-                print(
-                    f"📋 Loaded {len(existing_results)} existing records from previous run"
-                )
-
-                existing_results_by_id = {
-                    result["id"]: result for result in existing_results
-                }
-                records_to_rerun = []
-                for record in usecase_config["utterances_and_ground_truths"]:
-                    # Handle both pass_k format (id_attempt_X) and regular format
-                    if pass_k > 1:
-                        # For pass_k > 1, check if any attempt of this record needs rerunning
-                        for attempt in range(pass_k):
-                            record_id_with_attempt = f"{record['id']}_attempt_{attempt}"
-                            if record_id_with_attempt in ids_of_records_to_rerun:
-                                # Create a copy of the record with the attempt-specific ID
-                                record_copy = record.copy()
-                                record_copy[
-                                    "id"
-                                ] = record_id_with_attempt  # dont think this is needed, check
-                                records_to_rerun.append(record_copy)
-                    else:
-                        # For pass_k = 1, direct ID matching
-                        if record["id"] in ids_of_records_to_rerun:
-                            records_to_rerun.append(record)
-
-                print(f"🔄 Re-running {len(records_to_rerun)} specific records...")
-                new_results = await run_in_batches(
-                    records_to_rerun,
-                    usecase_config,
-                    model_config,
-                    mode,
-                    thinking_tools_enabled,
-                    agent_type,
-                    memory_type,
-                )
-
-                final_results = []
-                new_results_by_id = {result["id"]: result for result in new_results}
-                for existing_result in existing_results:
-                    record_id = existing_result["id"]
-                    if record_id in new_results_by_id:
-                        # Use the new result
-                        final_results.append(new_results_by_id[record_id])
-                        print(f"✅ Replaced result for record: {record_id}")
-                    else:
-                        # Keep the existing result unchanged
-                        final_results.append(existing_result)
-                final_results = normalize_result_data_types(final_results)
-                results = final_results
-                print(f"✅ Final merged results contain {len(results)} records")
-                existing_perf_data = collect_existing_perf_stats(
-                    previous_run_dir, ids_of_records_to_rerun
-                )
-                add_existing_perf_stats_to_current_session(existing_perf_data)
-                print(
-                    f"📊 Merged perf stats: kept existing data for non-rerun records, new data for rerun records"
-                )
-
-            except Exception as e:
-                print(f"❌ Error loading records to rerun: {e}")
-                return
-
-        elif RERUN_METRICS:
-            try:
-                results = load_existing_results(previous_run_dir)
-                print(f"📊 Loaded {len(results)} records from previous run")
-
-                # Re-run metrics on each result
-                for i, result in enumerate(results):
-                    trace = result["trace"]
-                    record_id = result["id"]
-                    user_utterance = result["user_utterance"]
-
-                    # Find the corresponding ground truth
-                    ground_truth = None
-                    for record in usecase_config["utterances_and_ground_truths"]:
-                        # Handle both original IDs and pass_k augmented IDs
-                        base_id = (
-                            record_id.split("_attempt_")[0]
-                            if "_attempt_" in record_id
-                            else record_id
-                        )
-                        if record["id"] == base_id or record["id"] == record_id:
-                            ground_truth = record["ground_truth"]
-                            break
-
-                    if not ground_truth:
-                        print(
-                            f"⚠️  Warning: No ground truth found for record {record_id}"
-                        )
-                        continue
-
-                    scores = run_metrics(
-                        usecase_config,
-                        trace,
-                        ground_truth,
-                        mode,
-                        thinking_tools_enabled,
-                    )
-                    for key, value in scores.items():
-                        result[key] = value
-
-                    print(f"✅ Re-scored record {i+1}/{len(results)}: {record_id}")
-
-                # copy perf stats over
-                os.makedirs(results_dir, exist_ok=True)
-                copied_files = copy_perf_stats_files(previous_run_dir, results_dir)
-                if copied_files:
-                    print(
-                        f"📋 Copied {len(copied_files)} perf stats file(s) from previous run"
-                    )
-
-            except Exception as e:
-                print(f"❌ Error loading previous results: {e}")
-                return
-    else:
-        if debug:
-            results = [
-                await process_record(
-                    usecase_config["utterances_and_ground_truths"][49],
-                    usecase_config,
-                    model_config,
-                    mode,
-                    thinking_tools_enabled,
-                    agent_type,
-                    memory_type,
-                )
-            ]
-        else:
-            records = get_records(
-                usecase_config["utterances_and_ground_truths"], pass_k
-            )
-            results = await run_in_batches(
-                records,
-                usecase_config,
-                model_config,
+        RERUN_METRICS = os.getenv("RERUN_METRICS", False)
+        RERUN_ERROR_RECORDS = os.getenv("RERUN_ERROR_RECORDS", False)
+        results = []
+        if RERUN_METRICS or RERUN_ERROR_RECORDS:
+            print(f"🔄 RERUN enabled - looking for existing results to re-run metrics on")
+            results_dir_pattern = os.path.join(
+                directory,
+                "results",
+                project,
+                usecase,
+                model,
                 mode,
-                thinking_tools_enabled,
+                "thinking_enabled" if thinking_tools_enabled else "no_thinking",
                 agent_type,
                 memory_type,
             )
+            previous_run_dir = find_most_recent_matching_run(results_dir_pattern, timestamp)
 
-    overall_scores = compute_overall_scores(
-        results, mode, thinking_tools_enabled, pass_k
-    )
-    perf_stats = PerfStats()
-    perf_file = os.path.join(results_dir, f"perf_stats_overall")
-    perf_stats.generate_summary(perf_file)
-    # load failure rates from perf stats file and add to overall scores
-    json_path = f"{perf_file}.json"
-    overall_perf_stats_dict = json.load(open(json_path, "r"))
-    failure_rates = []
-    for model_key in overall_perf_stats_dict:
-        avg_failure_rate = (
-            overall_perf_stats_dict[model_key].get("is_failure", {}).get("average", 0)
+            if not previous_run_dir:
+                print(
+                    "❌ No previous run found with matching configuration! Try running regularly"
+                )
+                print(f"   Looked in: {results_dir_pattern}")
+                return
+            print(f"✅ Found previous run: {previous_run_dir}")
+            if RERUN_ERROR_RECORDS:
+                try:
+                    # ids_of_records_to_rerun is set of ids that need to be rerun
+                    model_config = json.loads(os.getenv(f"{model.upper()}_CONFIG"))
+                    ids_of_records_to_rerun = get_records_to_rerun(
+                        previous_run_dir, model_config["name"]
+                    )
+                    print(
+                        f"📊 {len(ids_of_records_to_rerun)} records from previous run need to be rerun"
+                    )
+
+                    existing_results = load_existing_results(previous_run_dir)
+                    print(
+                        f"📋 Loaded {len(existing_results)} existing records from previous run"
+                    )
+
+                    existing_results_by_id = {
+                        result["id"]: result for result in existing_results
+                    }
+                    records_to_rerun = []
+                    for record in usecase_config["utterances_and_ground_truths"]:
+                        # Handle both pass_k format (id_attempt_X) and regular format
+                        if pass_k > 1:
+                            # For pass_k > 1, check if any attempt of this record needs rerunning
+                            for attempt in range(pass_k):
+                                record_id_with_attempt = f"{record['id']}_attempt_{attempt}"
+                                if record_id_with_attempt in ids_of_records_to_rerun:
+                                    # Create a copy of the record with the attempt-specific ID
+                                    record_copy = record.copy()
+                                    record_copy[
+                                        "id"
+                                    ] = record_id_with_attempt  # dont think this is needed, check
+                                    records_to_rerun.append(record_copy)
+                        else:
+                            # For pass_k = 1, direct ID matching
+                            if record["id"] in ids_of_records_to_rerun:
+                                records_to_rerun.append(record)
+
+                    print(f"🔄 Re-running {len(records_to_rerun)} specific records...")
+                    new_results = await run_in_batches(
+                        records_to_rerun,
+                        usecase_config,
+                        model_config,
+                        mode,
+                        thinking_tools_enabled,
+                        agent_type,
+                        memory_type,
+                    )
+
+                    final_results = []
+                    new_results_by_id = {result["id"]: result for result in new_results}
+                    for existing_result in existing_results:
+                        record_id = existing_result["id"]
+                        if record_id in new_results_by_id:
+                            # Use the new result
+                            final_results.append(new_results_by_id[record_id])
+                            print(f"✅ Replaced result for record: {record_id}")
+                        else:
+                            # Keep the existing result unchanged
+                            final_results.append(existing_result)
+                    final_results = normalize_result_data_types(final_results)
+                    results = final_results
+                    print(f"✅ Final merged results contain {len(results)} records")
+                    existing_perf_data = collect_existing_perf_stats(
+                        previous_run_dir, ids_of_records_to_rerun
+                    )
+                    add_existing_perf_stats_to_current_session(existing_perf_data)
+                    print(
+                        f"📊 Merged perf stats: kept existing data for non-rerun records, new data for rerun records"
+                    )
+
+                except Exception as e:
+                    print(f"❌ Error loading records to rerun: {e}")
+                    return
+
+            elif RERUN_METRICS:
+                try:
+                    results = load_existing_results(previous_run_dir)
+                    print(f"📊 Loaded {len(results)} records from previous run")
+
+                    # Re-run metrics on each result
+                    for i, result in enumerate(results):
+                        trace = result["trace"]
+                        record_id = result["id"]
+                        user_utterance = result["user_utterance"]
+
+                        # Find the corresponding ground truth
+                        ground_truth = None
+                        for record in usecase_config["utterances_and_ground_truths"]:
+                            # Handle both original IDs and pass_k augmented IDs
+                            base_id = (
+                                record_id.split("_attempt_")[0]
+                                if "_attempt_" in record_id
+                                else record_id
+                            )
+                            if record["id"] == base_id or record["id"] == record_id:
+                                ground_truth = record["ground_truth"]
+                                break
+
+                        if not ground_truth:
+                            print(
+                                f"⚠️  Warning: No ground truth found for record {record_id}"
+                            )
+                            continue
+
+                        scores = run_metrics(
+                            usecase_config,
+                            trace,
+                            ground_truth,
+                            mode,
+                            thinking_tools_enabled,
+                        )
+                        for key, value in scores.items():
+                            result[key] = value
+
+                        print(f"✅ Re-scored record {i+1}/{len(results)}: {record_id}")
+
+                    # copy perf stats over
+                    os.makedirs(results_dir, exist_ok=True)
+                    copied_files = copy_perf_stats_files(previous_run_dir, results_dir)
+                    if copied_files:
+                        print(
+                            f"📋 Copied {len(copied_files)} perf stats file(s) from previous run"
+                        )
+
+                except Exception as e:
+                    print(f"❌ Error loading previous results: {e}")
+                    return
+        else:
+            if debug:
+                print("Running on debug mode...")
+                results = [
+                    await process_record(
+                        usecase_config["utterances_and_ground_truths"][49],
+                        usecase_config,
+                        model_config,
+                        mode,
+                        thinking_tools_enabled,
+                        agent_type,
+                        memory_type,
+                    )
+                ]
+            else:
+                records = get_records(
+                    usecase_config["utterances_and_ground_truths"], pass_k
+                )
+                results = await run_in_batches(
+                    records,
+                    usecase_config,
+                    model_config,
+                    mode,
+                    thinking_tools_enabled,
+                    agent_type,
+                    memory_type,
+                )
+
+        overall_scores = compute_overall_scores(
+            results, mode, thinking_tools_enabled, pass_k
         )
-        if avg_failure_rate:
-            failure_rates.append(avg_failure_rate)
-    if failure_rates:
-        overall_scores.update(
-            {
-                "failure_rate": sum(failure_rates) / len(failure_rates)
-                if len(failure_rates) > 0
-                else 0
+        perf_stats = PerfStats()
+        perf_file = os.path.join(results_dir, f"perf_stats_overall")
+        perf_stats.generate_summary(perf_file)
+        # load failure rates from perf stats file and add to overall scores
+        json_path = f"{perf_file}.json"
+        overall_perf_stats_dict = json.load(open(json_path, "r"))
+        failure_rates = []
+        for model_key in overall_perf_stats_dict:
+            avg_failure_rate = (
+                overall_perf_stats_dict[model_key].get("is_failure", {}).get("average", 0)
+            )
+            if avg_failure_rate:
+                failure_rates.append(avg_failure_rate)
+        if failure_rates:
+            overall_scores.update(
+                {
+                    "failure_rate": sum(failure_rates) / len(failure_rates)
+                    if len(failure_rates) > 0
+                    else 0
+                }
+            )
+        csv_file = os.path.join(results_dir, "record_level.csv")
+        with open(csv_file, "w", newline="") as file:
+            fieldnames = results[0].keys()
+            writer = csv.DictWriter(file, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(results)
+
+        json_file = os.path.join(results_dir, "overall_scores.json")
+        with open(json_file, "w") as f:
+            json.dump(overall_scores, f, indent=4)
+
+        duration = time.time() - time.mktime(
+            datetime.strptime(timestamp, "%Y-%m-%d_%H-%M-%S").timetuple()
+        )
+        print(f"\n✅ Finished processing {len(results)} records in {duration:.2f} seconds.")
+        print("\n📈 Overall Scores...")
+        print(json.dumps(overall_scores, indent=4, ensure_ascii=False))
+        metadata_file = os.path.join(results_dir, "metadata.json")
+        with open(metadata_file, "w") as f:
+            metadata = {
+                "usecase": usecase,
+                "model": model,
+                "mode": mode,
+                "thinking_tools_enabled": thinking_tools_enabled,
+                "pass_k": pass_k,
+                "time_taken": f"{duration:.2f}",
             }
-        )
-    csv_file = os.path.join(results_dir, "record_level.csv")
-    with open(csv_file, "w", newline="") as file:
-        fieldnames = results[0].keys()
-        writer = csv.DictWriter(file, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerows(results)
-
-    json_file = os.path.join(results_dir, "overall_scores.json")
-    with open(json_file, "w") as f:
-        json.dump(overall_scores, f, indent=4)
-
-    duration = time.time() - time.mktime(
-        datetime.strptime(timestamp, "%Y-%m-%d_%H-%M-%S").timetuple()
-    )
-    print(f"\n✅ Finished processing {len(results)} records in {duration:.2f} seconds.")
-    print("\n📈 Overall Scores...")
-    print(json.dumps(overall_scores, indent=4, ensure_ascii=False))
-    metadata_file = os.path.join(results_dir, "metadata.json")
-    with open(metadata_file, "w") as f:
-        metadata = {
-            "usecase": usecase,
-            "model": model,
-            "mode": mode,
-            "thinking_tools_enabled": thinking_tools_enabled,
-            "pass_k": pass_k,
-            "time_taken": f"{duration:.2f}",
-        }
-        if RERUN_METRICS:
-            metadata["rerun_metrics"] = True
-        json.dump(metadata, f, indent=4)
+            if RERUN_METRICS:
+                metadata["rerun_metrics"] = True
+            json.dump(metadata, f, indent=4)
+        print("dumped metadata")
+        print("everything should be done now for real")
+    except Exception as e:
+        print(f"❌ Error running usecase: {e}")
+    finally:
+        raise Exception("force ending")
 
 
 if __name__ == "__main__":
@@ -582,17 +601,28 @@ if __name__ == "__main__":
     args = parser.parse_args()
     if args.memory_management == "compact" and args.agent_type == "ReAct":
         raise ValueError("ReAct only supports transparent memory management")
-    asyncio.run(
-        main(
-            args.usecase,
-            args.model,
-            args.mode,
-            args.debug,
-            args.thinking_tools_enabled,
-            args.pass_k,
-            args.project,
-            args.agent_type,
-            args.memory_management,
-            args.directory,
+    
+    # Run main with explicit event loop management for clean shutdown
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    try:
+        loop.run_until_complete(
+            main(
+                args.usecase,
+                args.model,
+                args.mode,
+                args.debug,
+                args.thinking_tools_enabled,
+                args.pass_k,
+                args.project,
+                args.agent_type,
+                args.memory_management,
+                args.directory,
+            )
         )
-    )
+    finally:
+        # Cancel all remaining tasks
+        print("entered finally")
+        sys.stdout.flush()
+        sys.stderr.flush()
+        sys.exit(0)

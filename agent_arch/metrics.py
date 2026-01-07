@@ -150,7 +150,7 @@ def run_metrics(
         if repeat_custom_tool_calls or repeat_thinking_tool_calls
         else False,
     }
-    print(json.dumps(record_score_dict, indent=4, ensure_ascii=False))
+    # print(json.dumps(record_score_dict, indent=4, ensure_ascii=False))
     return record_score_dict
 
 

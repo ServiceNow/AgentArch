@@ -109,7 +109,7 @@ agents:
                   type: number
                   description: Confidence score for the intent
               required: [intent, intent_type, confidence]
-              additionalProperties: false
+#              additionalProperties: false
           sentiment:
             description: Sentiment analysis result
             type: object
@@ -126,7 +126,7 @@ agents:
                 items:
                   type: string
             required: [sentiment, confidence, emotions]
-            additionalProperties: false
+#            additionalProperties: false
         response_type: boolean
         response_description: Returns True if the customer request was successfully updated else False
         tool_type: modify
@@ -458,7 +458,7 @@ agents:
                   type: string
                   description: The value to assign to the field
               required: [target_field, target_value]
-              additionalProperties: false
+#              additionalProperties: false
         response_type: object
         response_description: Confirmation that the record was successfully updated
         tool_type: modify
@@ -560,7 +560,7 @@ agents:
                   type: string
                   description: The value of the extracted entity (e.g., "ACC123456")
               required: [entity_name, entity_value]
-              additionalProperties: false
+#              additionalProperties: false
         response_type: list
         response_description: A list of fields to update, with each field represented as a JSON object string
         tool_type: query

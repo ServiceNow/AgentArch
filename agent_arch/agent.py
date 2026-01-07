@@ -160,13 +160,18 @@ class BaseAgent:
             if agent_name != "single_agent"
             else list(self.usecase_config["agents"].keys())
         )
+        seen_tool_names = set()
 
         for agent in agents_to_process:
             if self.usecase_config["agents"][agent].get("tools") is None:
                 continue
             for tool in self.usecase_config["agents"][agent]["tools"]:
                 current_tool = copy.deepcopy(tool_schema)
-                current_tool["function"]["name"] = tool["tool_name"]
+                tool_name = tool["tool_name"]
+                if tool_name in seen_tool_names:
+                    continue
+                seen_tool_names.add(tool_name)
+                current_tool["function"]["name"] = tool_name
                 current_tool["function"]["description"] = tool["tool_description"]
 
                 tool_inputs = tool["input_parameters"]
@@ -252,6 +257,7 @@ class BaseAgent:
         """
 
         iterations = 0
+        failure_detected = False
         run_context = RunContext()
 
         messages = load_prompt_messages(
@@ -268,7 +274,7 @@ class BaseAgent:
             else self.usecase_config["single_agent_max_iterations"]
         )
 
-        while iterations <= max_iterations:
+        while not failure_detected and iterations <= max_iterations:
             model_name = self.model_config["name"]
             tools = self.tools
             model_response = await model_call(
@@ -281,6 +287,10 @@ class BaseAgent:
                 tools=tools if self.agent_type == "function_calling" else None,
                 tool_choice="auto" if self.agent_type == "function_calling" else None,
             )
+
+            if model_response.is_failure:
+                failure_detected = True
+                break
 
             response_message = model_response.llm_response
 
@@ -380,6 +390,7 @@ class BaseAgent:
                     "tool_result": result,
                     "tool_call_id": tool_call["id"],
                 }
+                print(json.dumps(content_dict))
                 run_context.add_message_to_trace(
                     record_number=internal_record_id,
                     agent_name=self.agent_name,
@@ -402,7 +413,10 @@ class BaseAgent:
             # Append all tool messages after the assistant message
             messages.extend(tool_messages)
             iterations += 1
-
+        if not failure_detected:
+            print(f"Max iterations hit for record {internal_record_id}")
+        else:
+            print(f"Failure found so ending agent act loop for record {internal_record_id}")
         return "Agent loop exited after max iterations."
 
     async def communicate_with_team_flow(self, message: str, internal_record_id: str):
@@ -510,6 +524,7 @@ class BaseAgent:
         if agent_function is None:
             return "No registered function for agent: " + agent_name
         try:
+            print(f"CALLING AGENT FOR HELP {agent_name} with message {message}")
             finish_message = await agent_function(**args)
         except Exception as e:
             return f"Error calling agent {agent_name}: {e}"

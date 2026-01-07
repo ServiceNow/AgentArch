@@ -86,17 +86,26 @@ class Model:
                 relative_output_tokens=response_tokens,
             )
 
+            raw_response = chat_completion.model_dump_json() if hasattr(chat_completion, 'model_dump_json') else str(chat_completion)
+            
+            tool_calls_dumped = None
+            if tool_calls:
+                tool_calls_dumped = []
+                for tool_call in tool_calls:
+                    if hasattr(tool_call, 'model_dump'):
+                        tool_calls_dumped.append(tool_call.model_dump())
+                    else:
+                        tool_calls_dumped.append(tool_call if isinstance(tool_call, dict) else str(tool_call))
+            
             model_response = ModelResponse(
                 input_prompt=messages,
                 llm_response=llm_response,
                 reasoning_response=reasoning_response,
-                raw_response=chat_completion.model_dump_json(),
+                raw_response=raw_response,
                 raw_response_object=chat_completion,
                 response_code=200,
                 stop_reason=stop_reason,
-                tool_calls=[tool_call.model_dump() for tool_call in tool_calls]
-                if tool_calls
-                else None,
+                tool_calls=tool_calls_dumped,
                 performance=performance,
                 wait_time=int((call_end_time - call_start_time) * 1000),
                 error_tracker=None,
@@ -106,10 +115,16 @@ class Model:
             return model_response
         except Exception as e:
             print(f"Actual exception: {e}")
-            raise RetryableModelError(
-                "Raising error for retry",
-                {"type": "Error", "details": str(e)},
-            )
+            if "BadRequestError" in str(e):
+                raise  FinalModelError(
+                    message="Final model error",
+                    metadata={"type": "Error", "details": str(e)},
+                )
+            else:
+                raise RetryableModelError(
+                    "Raising error for retry",
+                    {"type": "Error", "details": str(e)},
+                )
 
     async def generate_text_with_retry(
             self,
@@ -152,13 +167,37 @@ class Model:
                 attempt += 1
                 delay = self.base_delay * (2**attempt) + random.uniform(0, 0.5)
                 print(
-                    f"⚠️ Model call failed (attempt {attempt}/{self.max_retries}) — {type(e).__name__}: {e}. Retrying in {delay:.2f}s..."
+                    f"⚠️ Model call failed (attempt {attempt}/{self.max_retries}) — {type(e).__name__}: {e} for for record {record_id}. Retrying in {delay:.2f}s..."
                 )
                 if attempt <= self.max_retries:
                     await asyncio.sleep(delay)
                 else:
                     # LOG AS A SERVER FAILURE
-                    print(f"❌ Exceeded maximum retry attempts ({self.max_retries}).")
+                    print(f"❌ Exceeded maximum retry attempts ({self.max_retries}) for record {record_id}.")
+            except FinalModelError as e:
+                print(f"❌ Model call failed due to ({e.metadata}) for record {record_id}..")
+                end_time = time.time()
+                error_tracker.increment(400)
+                model_response = ModelResponse(
+                    input_prompt=messages,
+                    llm_response="",
+                    is_failure=True,
+                    raw_response=str(e.metadata),
+                    raw_response_object=None,
+                    response_code=400,
+                    error_tracker=error_tracker,
+                    model_parameters=model_config,
+                    performance=None,
+                    wait_time=int((end_time - start_time) * 1000),
+                )
+                perf_stats.add(
+                    model_config["name"],
+                    "id",
+                    record_id + "_" + model_name_with_call_id,
+                )
+                perf_stats.add_all_stats(model_name_with_call_id, model_response)
+                return model_response
+
 
         # If we've exceeded max retries, create error response and log stats
         end_time = time.time()
@@ -209,3 +248,11 @@ class RetryableModelError(Exception):
     def __init__(self, message, metadata=None):
         super().__init__(message)
         self.metadata = metadata or {}
+
+class FinalModelError(Exception):
+    """Used to signal errors that are not retryable."""
+
+    def __init__(self, message, metadata=None):
+        super().__init__(message)
+        self.metadata = metadata or {}
+
